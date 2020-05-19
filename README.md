@@ -73,5 +73,13 @@ https://tileserverurl/static/klokantech-basic/47.263416/11.400512/17/500/500/2/p
 ### StaticMap with Markers  
 https://tileserverurl/static/klokantech-basic/47.263416/11.400512/17/500/500/2/png?markers=%5B%7B%22url%22%3A%22https%3A%2F%2Fraw.githubusercontent.com%2Fnileplumb%2FPkmnShuffleMap%2Fmaster%2FNOVA_Sprites%2F201.png%22%2C%22height%22%3A50%2C%22width%22%3A50%2C%22x_offset%22%3A0%2C%22y_offset%22%3A0%2C%22latitude%22%3A%2047.263416%2C%22longitude%22%3A%2011.400512%7D%5D  
 
+## TODO
+- Test tiles  
+- Templates  
+- Multi static map  
+- Change to post requests containing static map template data  
+- Cleanup code  
+- Eslint  
+
 ## Credits  
 - [SwiftTileserverCache](https://github.com/123FLO321/SwiftTileserverCache)  
