@@ -1,7 +1,6 @@
-/*
 'use strict';
 
-class HitStatistics {
+export class HitStats {
     static tileHitRatio: Dictionary = {};
     static staticHitRatio: Dictionary = {};
     static staticMarkerHitRatio: Dictionary = {};
@@ -11,8 +10,3 @@ class HitStatistics {
 interface Dictionary {
     [key: string]: { hit: number, miss: number };
 }
-
-export {
-    HitStatistics
-};
-*/
