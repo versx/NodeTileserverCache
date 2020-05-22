@@ -1,15 +1,11 @@
 'use strict';
 
-import { spawn } from 'child_process';
+import * as child from 'child_process';
 
-// TODO: Change any types
-// TODO: Change function
-
-function exec(path: string, args: any[]) {
-    //console.log('[Child] Cmd:', path, 'Args:', args);
+export const exec = (path: string, args: string[]): unknown => {
     return new Promise((resolve, reject) => {
         try {
-            const shell = spawn(path, args);
+            const shell = child.spawn(path, args);
             shell.stdout.on('data', (data: Buffer) => {
                 console.log('Stdout:' + data.toString());
             });
@@ -28,8 +24,4 @@ function exec(path: string, args: any[]) {
             return reject(e);
         }
     });
-}
-
-export {
-    exec
 };

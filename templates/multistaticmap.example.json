@@ -1,0 +1,77 @@
+{
+    "grid": [
+        {
+            "direction": "First",
+            "maps": [
+                {
+                    "direction": "First",
+                    "map": {
+                        "style": "klokantech-basic",
+                        "latitude": {{lat}},
+                        "longitude": {{lon}},
+                        "zoom": 17,
+                        "width": 500,
+                        "height": 250,
+                        "scale": 1,
+                        "markers": [
+                            {
+                                "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/1200px-Map_marker.svg.png",
+                                "latitude": {{lat}},
+                                "longitude": {{lon}},
+                                "width": 50,
+                                "height": 50
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "direction": "Bottom",
+            "maps": [
+                {
+                    "direction": "First",
+                    "map": {
+                        "style": "klokantech-basic",
+                        "latitude": {{lat}},
+                        "longitude": {{lon}},
+                        "zoom": 15,
+                        "width": 300,
+                        "height": 100,
+                        "scale": 1,
+                        "markers": [
+                            {
+                                "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/1200px-Map_marker.svg.png",
+                                "latitude": {{lat}},
+                                "longitude": {{lon}},
+                                "width": 25,
+                                "height": 25
+                            }
+                        ]
+                    }
+                },
+                {
+                    "direction": "Right",
+                    "map": {
+                        "style": "klokantech-basic",
+                        "latitude": {{lat}},
+                        "longitude": {{lon}},
+                        "zoom": 12,
+                        "width": 200,
+                        "height": 100,
+                        "scale": 1,
+                        "markers": [
+                            {
+                                "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/1200px-Map_marker.svg.png",
+                                "latitude": {{lat}},
+                                "longitude": {{lon}},
+                                "width": 25,
+                                "height": 25
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

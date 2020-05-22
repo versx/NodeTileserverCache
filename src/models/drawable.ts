@@ -1,9 +1,5 @@
 'use strict';
 
-interface Drawable {
+export interface Drawable {
     hashString: string;
 }
-
-export {
-    Drawable
-};

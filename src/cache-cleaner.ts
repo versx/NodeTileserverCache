@@ -7,13 +7,13 @@ import * as utils from './utils';
 class CacheCleaner {
     folder: string;
     maxAgeMinutes: number;
-    clearDelaySeconds: number = 60;
+    clearDelaySeconds: number;
     timer: NodeJS.Timeout;
 
-    constructor(folder: string, maxAgeMinutes: number, clearDelaySeconds: number = 60) {
+    constructor(folder: string, maxAgeMinutes: number, clearDelaySeconds: number) {
         this.folder = folder;
         this.maxAgeMinutes = maxAgeMinutes;
-        this.clearDelaySeconds = clearDelaySeconds;
+        this.clearDelaySeconds = clearDelaySeconds || 60;
         this.timer = setInterval(() => this.checkFiles(), clearDelaySeconds * 1000);
         console.log('Started cache directory cleaner for', this.folder);
     }
