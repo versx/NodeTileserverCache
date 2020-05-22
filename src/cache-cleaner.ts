@@ -4,19 +4,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as utils from './utils';
 
-class CacheCleaner {
-    folder: string;
-    maxAgeMinutes: number;
-    clearDelaySeconds: number;
-    timer: NodeJS.Timeout;
+export class CacheCleaner {
+    private folder: string;
+    private maxAgeMinutes: number;
+    private clearDelaySeconds: number;
+    private timer: NodeJS.Timeout;
 
     constructor(folder: string, maxAgeMinutes: number, clearDelaySeconds: number) {
         this.folder = folder;
         this.maxAgeMinutes = maxAgeMinutes;
         this.clearDelaySeconds = clearDelaySeconds || 60;
-        this.timer = setInterval(() => this.checkFiles(), clearDelaySeconds * 1000);
+        this.timer = setInterval(() => this.checkFiles(), this.clearDelaySeconds * 1000);
         console.log('Started cache directory cleaner for', this.folder);
     }
+
     private checkFiles() {
         fs.readdir(this.folder, (err, files) => {
             if (err) {
@@ -48,11 +49,8 @@ class CacheCleaner {
             }
         });
     }
-    stop() {
+
+    public stop() {
         clearInterval(this.timer);
     }
 }
-
-export {
-    CacheCleaner
-};
