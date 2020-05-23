@@ -4,6 +4,7 @@ require('dotenv').config({ path: './src/.env' });
 import app from './app';
 
 // TODO: Test tiles
+// TODO: Fix combineImagesGrid
 // TODO: Cleanup code, separate into classes
 
 // Start listener

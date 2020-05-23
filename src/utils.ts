@@ -114,24 +114,23 @@ export const touch = (fileName: string): void => {
     }
 };
 
-export const combineImagesGrid = async (grids: Grid[], destinationPath: string): Promise<void> => {
+export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: string): Promise<void> => {
     console.log(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
     const args = Array<string>();
     for (let i = 0; i < grids.length; i++) {
         const grid = grids[i];
-        args.push('\(');
+        args.push('\\(');
         args.push(grid.firstPath);
-        for (let j = 0; j < grid.images.length; j++) {
-            const image = grid.images[j];
-            //console.log('Image:', image);
+        //for (let j = 0; j < grid.images.length; j++) {
+        grid.images.forEach((image: any) => {
             args.push(image.path);
             if (image.direction === CombineDirection.Bottom) {
                 args.push('-append');
             } else {
                 args.push('+append');
             }
-        }
-        args.push('\)');
+        });
+        args.push('\\)');
         if (grid.direction === CombineDirection.Bottom) {
             args.push('-append');
         } else {

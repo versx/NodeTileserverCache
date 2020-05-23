@@ -75,11 +75,8 @@ https://tileserverurl/static/klokantech-basic/47.263416/11.400512/17/500/500/2/p
 
 ## TODO
 - Test tiles  
-- Templates  
-- Multi static map  
-- Change to post requests containing static map template data  
+- Fix combineImagesGrid  
 - Cleanup code  
-- Eslint  
 
 ## Credits  
 - [SwiftTileserverCache](https://github.com/123FLO321/SwiftTileserverCache)  
