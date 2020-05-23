@@ -168,179 +168,6 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
 //http://10.0.0.2:43200/static/basic-preview/47.404041/8.539621/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.404041,%22longitude%22:8.539621}]
 //http://10.0.1.55:43200/static/klokantech-basic/8.68641/47.52305/15/300/175/1/png?markers=[{"url":"https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8","height":32,"width":32,"x_offset":0,"y_offset":0,"latitude":47.52305,"longitude":8.686411}]&polygons=[{"fill_color":"rgba(100.0%,0.0%,0.0%,0.5)","stroke_color":"black","stroke_width":1,"path":"[[8.685018,47.523804],[8.685686,47.522246],[8.687436,47.522314],[8.686919,47.523887],[8.685018,47.523804]]"}]
 //http://127.0.0.1:43200/static/klokantech-basic/47.52305/8.68641/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.52305,%22longitude%22:8.686411}]&polygons=[{%22fill_color%22:%22rgba(100.0%,0.0%,0.0%,0.5)%22,%22stroke_color%22:%22black%22,%22stroke_width%22:1,%22path%22:%22[[47.523804,8.685018],[47.522246,8.685686],[47.522314,8.687436],[47.523887,8.686919],[47.523804,8.685018]]%22}]
-/**
- * GET /static
- */
-/*
-export const getStatic = async (req: Request, res: Response) => {
-    console.log('Static:', req.params);
-    const style = req.params.style;
-    const lat = parseFloat(req.params.lat);
-    const lon = parseFloat(req.params.lon);
-    const zoom = parseInt(req.params.zoom);
-    const width = parseInt(req.params.width);
-    const height = parseInt(req.params.height);
-    const scale = parseInt(req.params.scale);
-    const format = req.params.format;
-    const fileName = path.resolve(StaticCacheDir, `${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-    //const staticMap = Object.assign(new StaticMap(), req.params);
-    //console.log("StaticMap Object:", staticMap);
-    if (scale >= 1 && validFormats.includes(format)) {
-        // Valid format, check if static file already exists
-        if (await utils.fileExists(fileName)) {
-            // Static file exists, update last modified time
-            utils.touch(fileName);
-            //staticHitRatio[style].hit++;
-            if (HitStats.staticHitRatio[style]) {
-                HitStats.staticHitRatio[style].hit++;
-            } else {
-                HitStats.staticHitRatio[style] = {
-                    hit: 1,
-                    miss: 0
-                };
-            }
-        } else {
-            // Static file does not exist, download from tileserver
-            const scaleString = scale === 1 ? '' : `@${scale}x`;
-            const tileUrl = `${process.env.TILE_SERVER_URL}/styles/${style}/static/${lon},${lat},${zoom}/${width}x${height}${scaleString}.${format}`;
-            await utils.downloadFile(tileUrl, fileName);
-            //staticHitRatio[style].miss++;
-            if (HitStats.staticHitRatio[style]) {
-                HitStats.staticHitRatio[style].miss++;
-            } else {
-                HitStats.staticHitRatio[style] = {
-                    hit: 0,
-                    miss: 1
-                };
-            }
-        }
-
-        let drawables: Array<Drawable> = [];
-        console.log("Query:", req.query);
-        parseMarkers(req.query.markers?.toString())
-            .forEach((marker: Marker) =>  drawables.push(marker));
-        parsePolygons(req.query.polygons?.toString())
-            .forEach((polygon: Polygon) => drawables.push(polygon));
-
-        console.log("Drawable Objects:", drawables);
-        if (drawables.length > 0) {
-            const hashes = drawables.map(drawable => drawable.hashString);
-            const fileNameWithMarker = path.resolve(StaticWithMarkersCacheDir, `${style}-${lat}-${lon}-${zoom}-${width}-${height}-${hashes.join(',')}-${scale}.${format}`);
-            if (await utils.fileExists(fileNameWithMarker)) {
-                utils.touch(fileName);
-                //staticMarkerHitRatio[style].hit++;
-                if (HitStats.staticMarkerHitRatio[style]) {
-                    HitStats.staticMarkerHitRatio[style].hit++;
-                } else {
-                    HitStats.staticMarkerHitRatio[style] = {
-                        hit: 1,
-                        miss: 0
-                    };
-                }
-            } else {
-                let hashes = '';
-                let fileNameWithMarkerFull = fileName;
-                for (var i = 0; i < drawables.length; i++) {
-                    const drawable = drawables[i];
-                    hashes += drawable.hashString;
-                    const fileNameWithMarker = path.resolve(StaticWithMarkersCacheDir, `${style}-${lat}-${lon}-${zoom}-${width}-${height}-${hashes}-${scale}.${format}`);
-                    if (await utils.fileExists(fileNameWithMarker)) {
-                        // Static with marker file exists, touch for last modified timestamp.
-                        utils.touch(fileName);
-                        //staticMarkerHitRatio[style].hit++;
-                        if (HitStats.staticMarkerHitRatio[style]) {
-                            HitStats.staticMarkerHitRatio[style].hit++;
-                        } else {
-                            HitStats.staticMarkerHitRatio[style] = {
-                                hit: 1,
-                                miss: 0
-                            };
-                        }
-                    } else {
-                        // Static with marker file does not exist, check if marker downloaded.
-                        console.log(`Building Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${hashes}-${scale}.${format}`);
-                        if (drawable instanceof Marker) {
-                            const marker = Object.assign(new Marker(), drawable);
-                            const markerUrlEncoded = utils.md5(marker.url);
-                            const markerFileName = path.resolve(MarkerCacheDir, markerUrlEncoded);
-                            if (await utils.fileExists(markerFileName)) {
-                                // Marker already downloaded, touch for last modified timestamp.
-                                utils.touch(fileName);
-                                //markerHitRatio[style].hit++;
-                                if (HitStats.markerHitRatio[style]) {
-                                    HitStats.markerHitRatio[style].hit++;
-                                } else {
-                                    HitStats.markerHitRatio[style] = {
-                                        hit: 1,
-                                        miss: 0
-                                    };
-                                }
-                            } else {
-                                // Download marker to cache for future use.
-                                console.log(`Loading Marker: ${marker.url}`);
-                                await utils.downloadFile(marker.url, markerFileName);
-                                //markerHitRatio[style].miss++;
-                                if (HitStats.markerHitRatio[style]) {
-                                    HitStats.markerHitRatio[style].miss++;
-                                } else {
-                                    HitStats.markerHitRatio[style] = {
-                                        hit: 0,
-                                        miss: 1
-                                    };
-                                }
-                            }
-                            try {
-                                await utils.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, marker, scale, lat, lon, zoom);
-                            } catch (e) {
-                                console.error('[ERROR]', e);
-                            }
-                        } else if (drawable instanceof Polygon) {
-                            const polygon = Object.assign(new Polygon(), drawable);
-                            await utils.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, polygon, scale, lat, lon, zoom, width, height);
-                        }
-                        //staticMarkerHitRatio[style].miss++;
-                        if (HitStats.staticMarkerHitRatio[style]) {
-                            HitStats.staticMarkerHitRatio[style].miss++;
-                        } else {
-                            HitStats.staticMarkerHitRatio[style] = {
-                                hit: 0,
-                                miss: 1
-                            };
-                        }
-                    }
-                    hashes += ',';
-                    fileNameWithMarkerFull = fileNameWithMarker;
-                }
-            }
-            // Serve static file
-            res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-            console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-            res.sendFile(fileNameWithMarker, (err: Error) => {
-                if (err) {
-                    console.error('[ERROR] Failed to send static file:', err);
-                    return;
-                }
-            });
-        } else {
-            // Serve static file
-            res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-            console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-            res.sendFile(fileName, (err: Error) => {
-                if (err) {
-                    console.error('[ERROR] Failed to send static file:', err);
-                    return;
-                }
-            });
-        }
-    } else {
-        // TODO: Throw error;
-        res.send('Error');
-        return;
-    }
-
-    console.log('[STATS] Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
-}
-*/
 export const getStatic = async (req: Request, res: Response): Promise<void> => {
     console.log('Static:', req.params);
     const style = req.params.style;
@@ -593,10 +420,10 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
 
         const drawables: Array<Drawable> = [];
         if (staticMap.markers && staticMap.markers.length > 0) {
-            staticMap.markers.forEach((marker: Marker) =>  drawables.push(marker));
+            staticMap.markers.forEach((marker: Marker) => drawables.push(Object.assign(new Marker(), marker)));
         }
         if (staticMap.polygons && staticMap.polygons.length > 0) {
-            staticMap.polygons.forEach((polygon: Polygon) => drawables.push(polygon));
+            staticMap.polygons.forEach((polygon: Polygon) => drawables.push(Object.assign(new Polygon(), polygon)));
         }
 
         console.log('Drawable Objects:', drawables);
@@ -618,6 +445,7 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
                 let fileNameWithMarkerFull = fileName;
                 for (let i = 0; i < drawables.length; i++) {
                     const drawable = drawables[i];
+                    //console.log('Hash:', drawable.hashString);
                     hashes += drawable.hashString;
                     const fileNameWithMarker = path.resolve(StaticWithMarkersCacheDir, `${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${hashes}-${staticMap.scale}.${staticMap.format}`);
                     if (await utils.fileExists(fileNameWithMarker)) {
@@ -700,7 +528,6 @@ const generateMultiStaticMap = async (multiStaticMap: MultiStaticMap): Promise<s
         console.error('At least one grid is required');
         return '';
     }
-    console.log('Grid[0].Direction:', multiStaticMap.grid[0].direction);
     if (multiStaticMap.grid[0].direction !== CombineDirection.First) {
         console.error('First grid requires direction: "first"');
         return '';
@@ -737,7 +564,8 @@ const generateMultiStaticMap = async (multiStaticMap: MultiStaticMap): Promise<s
             const images: Array<{ direction: CombineDirection, path: string }> = [];
             for (let j = 0; j < grid.maps.length; j++) {
                 const map = grid.maps[i];
-                const url = await generateStaticMap(map.map);
+                const staticMap = Object.assign(new StaticMap(), map.map);
+                const url = await generateStaticMap(staticMap);
                 if (map.direction === CombineDirection.First) {
                     firstMapUrl = url;
                 } else {
@@ -747,8 +575,7 @@ const generateMultiStaticMap = async (multiStaticMap: MultiStaticMap): Promise<s
             
             grids.push({ firstPath: firstMapUrl, direction: grid.direction, images: images });
         }
-        console.log('Generating MutliStatic:', multiStaticMap);
-        utils.combineImagesGrid(grids, fileNameWithMarker);
+        await utils.combineImagesGrid(grids, fileNameWithMarker);
         console.log('Serving MutliStatic:', multiStaticMap);
         return fileNameWithMarker;
     }

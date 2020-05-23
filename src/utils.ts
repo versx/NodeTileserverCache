@@ -77,7 +77,6 @@ export const downloadFile = (from: string, to: string): Promise<void> => {
                 if (err) {
                     return reject(err);
                 }
-                console.log('Body:', body, res);
                 request(from)
                     .pipe(fs.createWriteStream(to))
                     .on('close', () => {
@@ -115,22 +114,22 @@ export const touch = (fileName: string): void => {
     }
 };
 
-export const combineImagesGrid = async (grids: Grid[], destinationPath: string): Promise<void> => {
-    //console.log(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
+export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: string): Promise<void> => {
+    console.log(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
     const args = Array<string>();
     for (let i = 0; i < grids.length; i++) {
         const grid = grids[i];
         args.push('\\(');
         args.push(grid.firstPath);
-        for (let j = 0; j < grid.images.length; j++) {
-            const image = grid.images[j];
+        //for (let j = 0; j < grid.images.length; j++) {
+        grid.images.forEach((image: any) => {
             args.push(image.path);
             if (image.direction === CombineDirection.Bottom) {
                 args.push('-append');
             } else {
                 args.push('+append');
             }
-        }
+        });
         args.push('\\)');
         if (grid.direction === CombineDirection.Bottom) {
             args.push('-append');
@@ -140,6 +139,7 @@ export const combineImagesGrid = async (grids: Grid[], destinationPath: string):
     }
     args.push(destinationPath);
 
+    //console.log('Grid Args:', args);
     try {
         const shell = await exec('/usr/local/bin/convert', args);
         console.log('Magick CombineImagesGrid:', shell);
@@ -198,7 +198,7 @@ export const drawPolygon = async (staticPath: string, destinationPath: string, p
     polygonPath = polygonPath.slice(0, polygonPath.length - 1);
     const shell = await exec('/usr/local/bin/convert', [
         staticPath,
-        '-strokewidth', polygon.stroke_width,
+        '-strokewidth', polygon.stroke_width?.toString(),
         '-fill', polygon.fill_color,
         '-stroke', polygon.stroke_color,
         '-gravity', 'Center',
