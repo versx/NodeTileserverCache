@@ -8,7 +8,7 @@
     "scale": 1,
     "markers": [
         {
-            "url": "https://rdmurl/static/img/pokemon/{{id}}-{{form}}.png",
+            "url": "http://cdn.nianticapps.com/images/original/monsters/{{id}}_{{form}}.png",
             "latitude": {{lat}},
             "longitude": {{lon}},
             "width": 50,
