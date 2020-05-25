@@ -1,7 +1,7 @@
 'use strict';
 
 import { Drawable } from './drawable';
-import * as utils from '../utils';
+import * as utils from '../services/utils';
 
 export class Polygon implements Drawable {
     public fill_color: string;

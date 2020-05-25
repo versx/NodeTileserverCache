@@ -3,9 +3,6 @@ import path from 'path';
 import { Request, Response } from 'express';
 import Mustache from 'mustache';
 
-import { CacheCleaner } from '../cache-cleaner';
-import { HitStats } from '../stats';
-import * as utils from '../utils';
 import { CombineDirection } from '../data/combine-direction';
 import { Drawable } from '../models/drawable';
 import { Grid } from '../models/grid';
@@ -13,6 +10,9 @@ import { Marker } from '../models/marker';
 import { MultiStaticMap } from '../models/multi-staticmap';
 import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
+import { CacheCleaner } from '../services/cache-cleaner';
+import { HitStats } from '../services/stats';
+import * as utils from '../services/utils';
 
 const ValidFormats = [ 'png', 'jpg' ];
 
@@ -114,7 +114,7 @@ export const getStyles = async (req: Request, res: Response): Promise<void> => {
 export const getTile = async (req: Request, res: Response): Promise<void> => {
     console.log('Tile:', req.params);
     const style = req.params.style;
-    const z = req.params.z;
+    const z = parseInt(req.params.z);
     const x = parseFloat(req.params.x);
     const y = parseFloat(req.params.y);
     const scale = parseInt(req.params.scale);
@@ -123,28 +123,12 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     if (scale >= 1 && ValidFormats.includes(format)) {
         if (await utils.fileExists(fileName)) {
             utils.touch(fileName);
-            //tileHitRatio[style].hit++;
-            if (HitStats.tileHitRatio[style]) {
-                HitStats.tileHitRatio[style].hit++;
-            } else { 
-                HitStats.tileHitRatio[style] = {
-                    hit: 1,
-                    miss: 0
-                };
-            }
+            HitStats.tileHit(style, false);
         } else {
             const scaleString = scale === 1 ? '' : `@${scale}x`;
             const tileUrl = `${process.env.TILE_SERVER_URL}/styles/${style}/${z}/${x}/${y}/${scaleString}.${format}`;
             await utils.downloadFile(tileUrl, fileName);
-            //tileHitRatio[style].miss++;
-            if (HitStats.tileHitRatio[style]) {
-                HitStats.tileHitRatio[style].miss++;
-            } else { 
-                HitStats.tileHitRatio[style] = {
-                    hit: 0,
-                    miss: 1
-                };
-            }
+            HitStats.tileHit(style, true);
         }
     } else {
         // Failed
@@ -168,6 +152,9 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
 //http://10.0.0.2:43200/static/basic-preview/47.404041/8.539621/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.404041,%22longitude%22:8.539621}]
 //http://10.0.1.55:43200/static/klokantech-basic/8.68641/47.52305/15/300/175/1/png?markers=[{"url":"https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8","height":32,"width":32,"x_offset":0,"y_offset":0,"latitude":47.52305,"longitude":8.686411}]&polygons=[{"fill_color":"rgba(100.0%,0.0%,0.0%,0.5)","stroke_color":"black","stroke_width":1,"path":"[[8.685018,47.523804],[8.685686,47.522246],[8.687436,47.522314],[8.686919,47.523887],[8.685018,47.523804]]"}]
 //http://127.0.0.1:43200/static/klokantech-basic/47.52305/8.68641/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.52305,%22longitude%22:8.686411}]&polygons=[{%22fill_color%22:%22rgba(100.0%,0.0%,0.0%,0.5)%22,%22stroke_color%22:%22black%22,%22stroke_width%22:1,%22path%22:%22[[47.523804,8.685018],[47.522246,8.685686],[47.522314,8.687436],[47.523887,8.686919],[47.523804,8.685018]]%22}]
+/**
+ * GET /static
+ */
 export const getStatic = async (req: Request, res: Response): Promise<void> => {
     console.log('Static:', req.params);
     const style = req.params.style;
@@ -395,27 +382,13 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
         if (await utils.fileExists(fileName)) {
             // Static file exists, update last modified time
             utils.touch(fileName);
-            if (HitStats.staticHitRatio[staticMap.style]) {
-                HitStats.staticHitRatio[staticMap.style].hit++;
-            } else {
-                HitStats.staticHitRatio[staticMap.style] = {
-                    hit: 1,
-                    miss: 0
-                };
-            }
+            HitStats.staticHit(staticMap.style, false);
         } else {
             // Static file does not exist, download from tileserver
             const scaleString = staticMap.scale === 1 ? '' : `@${staticMap.scale}x`;
             const tileUrl = `${process.env.TILE_SERVER_URL}/styles/${staticMap.style}/static/${staticMap.longitude},${staticMap.latitude},${staticMap.zoom}/${staticMap.width}x${staticMap.height}${scaleString}.${staticMap.format}`;
             await utils.downloadFile(tileUrl, fileName);
-            if (HitStats.staticHitRatio[staticMap.style]) {
-                HitStats.staticHitRatio[staticMap.style].miss++;
-            } else {
-                HitStats.staticHitRatio[staticMap.style] = {
-                    hit: 0,
-                    miss: 1
-                };
-            }
+            HitStats.staticHit(staticMap.style, true);
         }
 
         const drawables: Array<Drawable> = [];
@@ -432,14 +405,7 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
             const fileNameWithMarker = path.resolve(StaticWithMarkersCacheDir, `${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${hashes.join(',')}-${staticMap.scale}.${staticMap.format}`);
             if (await utils.fileExists(fileNameWithMarker)) {
                 utils.touch(fileName);
-                if (HitStats.staticMarkerHitRatio[staticMap.style]) {
-                    HitStats.staticMarkerHitRatio[staticMap.style].hit++;
-                } else {
-                    HitStats.staticMarkerHitRatio[staticMap.style] = {
-                        hit: 1,
-                        miss: 0
-                    };
-                }
+                HitStats.staticMarkerHit(staticMap.style, false);
             } else {
                 let hashes = '';
                 let fileNameWithMarkerFull = fileName;
@@ -451,14 +417,7 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
                     if (await utils.fileExists(fileNameWithMarker)) {
                         // Static with marker file exists, touch for last modified timestamp.
                         utils.touch(fileName);
-                        if (HitStats.staticMarkerHitRatio[staticMap.style]) {
-                            HitStats.staticMarkerHitRatio[staticMap.style].hit++;
-                        } else {
-                            HitStats.staticMarkerHitRatio[staticMap.style] = {
-                                hit: 1,
-                                miss: 0
-                            };
-                        }
+                        HitStats.staticMarkerHit(staticMap.style, false);
                     } else {
                         // Static with marker file does not exist, check if marker downloaded.
                         console.log(`Building Static: ${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${hashes}-${staticMap.scale}.${staticMap.format}`);
@@ -469,26 +428,12 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
                             if (await utils.fileExists(markerFileName)) {
                                 // Marker already downloaded, touch for last modified timestamp.
                                 utils.touch(fileName);
-                                if (HitStats.markerHitRatio[staticMap.style]) {
-                                    HitStats.markerHitRatio[staticMap.style].hit++;
-                                } else {
-                                    HitStats.markerHitRatio[staticMap.style] = {
-                                        hit: 1,
-                                        miss: 0
-                                    };
-                                }
+                                HitStats.markerHit(staticMap.style, false);
                             } else {
                                 // Download marker to cache for future use.
                                 console.log(`Loading Marker: ${marker.url}`);
                                 await utils.downloadFile(marker.url, markerFileName);
-                                if (HitStats.markerHitRatio[staticMap.style]) {
-                                    HitStats.markerHitRatio[staticMap.style].miss++;
-                                } else {
-                                    HitStats.markerHitRatio[staticMap.style] = {
-                                        hit: 0,
-                                        miss: 1
-                                    };
-                                }
+                                HitStats.markerHit(staticMap.style, true);
                             }
                             try {
                                 await utils.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, marker, staticMap.scale, staticMap.latitude, staticMap.longitude, staticMap.zoom);
@@ -499,14 +444,7 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
                             const polygon = Object.assign(new Polygon(), drawable);
                             await utils.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, polygon, staticMap.scale, staticMap.latitude, staticMap.longitude, staticMap.zoom, staticMap.width, staticMap.height);
                         }
-                        if (HitStats.staticMarkerHitRatio[staticMap.style]) {
-                            HitStats.staticMarkerHitRatio[staticMap.style].miss++;
-                        } else {
-                            HitStats.staticMarkerHitRatio[staticMap.style] = {
-                                hit: 0,
-                                miss: 1
-                            };
-                        }
+                        HitStats.staticMarkerHit(staticMap.style, true);
                     }
                     hashes += ',';
                     fileNameWithMarkerFull = fileNameWithMarker;
