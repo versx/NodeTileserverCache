@@ -5,11 +5,6 @@ const app = express();
 
 import * as routes from './routes/index';
 
-// View engine
-//app.set('view engine', 'mustache');
-//app.set('views', path.resolve(__dirname, 'views'));
-//app.engine('mustache', mustacheExpress());
-
 // Body parser middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
@@ -17,8 +12,16 @@ app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 // Routing endpoints
 app.get('/', routes.getRoot);
 app.get('/styles', routes.getStyles);
+
 app.get('/tile/:style/:z/:x/:y/:scale/:format', async (req, res) => await routes.getTile(req, res));
 app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', async (req, res) => await routes.getStatic(req, res));
+
+app.get('/staticmap/:template', routes.getStaticMapTemplate);
+app.get('/staticmap', routes.getStaticMap);
+app.post('/staticmap', routes.postStaticMap);
+
+app.get('/multistaticmap/:template', routes.getMultiStaticMapTemplate);
+app.post('/multistaticmap', routes.postMultiStaticMap);
 
 // Start cache cleaners
 routes.startCacheCleaners();

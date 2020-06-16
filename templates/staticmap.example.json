@@ -1,0 +1,18 @@
+{
+    "style": "klokantech-basic",
+    "latitude": {{lat}},
+    "longitude": {{lon}},
+    "zoom": 15,
+    "width": 500,
+    "height": 250,
+    "scale": 1,
+    "markers": [
+        {
+            "url": "http://rdmurl/static/img/pokemon/{{id}}-{{form}}.png",
+            "latitude": {{lat}},
+            "longitude": {{lon}},
+            "width": 50,
+            "height": 50
+        }
+    ]
+}

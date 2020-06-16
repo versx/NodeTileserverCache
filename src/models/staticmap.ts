@@ -1,10 +1,9 @@
-/*
 'use strict';
 
 import { Marker } from './marker';
 import { Polygon } from './polygon';
 
-class StaticMap {
+export class StaticMap {
     public style: string;
     public latitude: number;
     public longitude: number;
@@ -12,29 +11,25 @@ class StaticMap {
     public width: number;
     public height: number;
     public scale: number;
-    public format: string;
+    public format?: string;
     public bearing?: number;
     public pitch?: number;
     public markers?: Marker[];
     public polygons?: Polygon[];
 
-    constructor() {
-        this.style = '';
-        this.latitude = 0;
-        this.longitude = 0;
-        this.zoom = 14;
-        this.width = 0;
-        this.height = 0;
-        this.scale = 1;
-        this.format = 'png';
-        //this.bearing = 0;
-        //this.pitch = 0;
-        this.markers = [];
-        this.polygons = [];
+    constructor(style = '', latitude = 0, longitude = 0, zoom = 14, width = 0, height = 0,
+        scale = 1, format = 'png', bearing = 0, pitch = 0, markers: Marker[] = [], polygons: Polygon[] = []) {
+        this.style = style;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.zoom = zoom;
+        this.width = width;
+        this.height = height;
+        this.scale = scale;
+        this.format = format;
+        this.bearing = bearing;
+        this.pitch = pitch;
+        this.markers = markers;
+        this.polygons = polygons;
     }
 }
-
-export {
-    StaticMap
-};
-*/

@@ -4,13 +4,15 @@ import * as fs from 'fs';
 import request from 'request';
 import SphericalMercator from '@mapbox/sphericalmercator';
 import * as crypto from 'crypto';
-const btoa = require('btoa');
+import btoa from 'btoa';
 
 import { exec } from './spawn';
-import { Marker as _Marker, Marker } from './models/marker';
-import { Polygon as _Polygon, Polygon } from './models/polygon';
+import { Grid } from './models/grid';
+import { Marker } from './models/marker';
+import { Polygon } from './models/polygon';
+import { CombineDirection } from './data/combine-direction';
 
-async function fileExists(path: string): Promise<boolean> {
+export const fileExists = async (path: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
         try {
             fs.exists(path, (exists: boolean) => {
@@ -20,9 +22,9 @@ async function fileExists(path: string): Promise<boolean> {
             return reject(e);
         }
     });
-}
+};
 
-async function fileLastModifiedTime(path: string): Promise<Date> {
+export const fileLastModifiedTime = async (path: string): Promise<Date> => {
     return new Promise((resolve, reject) => {
         try {
             fs.stat(path, (err, stats) => {
@@ -35,9 +37,24 @@ async function fileLastModifiedTime(path: string): Promise<Date> {
             return reject(e);
         }
     });
-}
+};
 
-async function getData(url: string): Promise<string> {
+export const fileRead = async (path: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        try {
+            fs.readFile(path, 'utf-8', (err, data: string) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(data);
+            });
+        } catch (e) {
+            return reject(e);
+        }
+    });
+};
+
+export const getData = async (url: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         try {
             request(url, (err, res, body) => {
@@ -50,48 +67,88 @@ async function getData(url: string): Promise<string> {
             return reject(e);
         }
     });
-}
+};
 
-async function downloadFile(from: string, to: string): Promise<void> {
+export const downloadFile = (from: string, to: string): Promise<void> => {
     console.log(`DownloadFile [From: ${from} To: ${to}]`);
-    // TODO: Validate paths
     return new Promise((resolve, reject) => {
         try {
             request.head(from, (err, res, body) => {
+                if (err) {
+                    return reject(err);
+                }
                 request(from)
-                .pipe(fs.createWriteStream(to))
-                .on('close', () => {
-                    resolve();
-                })
+                    .pipe(fs.createWriteStream(to))
+                    .on('close', () => {
+                        resolve();
+                    });
             });
         } catch (e) {
             return reject(e);
         }
     });
-}
+};
 
-function md5(data: string) {
-    const md5 = crypto.createHash('md5').update(data).digest("hex");
-    return md5;
-}
+export const md5 = (data: string): string => {
+    const hash = crypto
+        .createHash('md5')
+        .update(data)
+        .digest('hex');
+    return hash;
+};
 
-function getHashCode(obj: any) {
+// TODO: Review unknown (any value) or Record<string, unknown> (any object)
+export const getHashCode = (obj: unknown): string => {
     const json = JSON.stringify(obj);
     const base64 = btoa(json).replace('/', '_');
     const hash = md5(base64);
     return hash;
-}
+};
 
-function touch(fileName: string) {
+export const touch = (fileName: string): void => {
     try {
         const time = new Date();
         fs.utimesSync(fileName, time, time);
     } catch (err) {
         fs.closeSync(fs.openSync(fileName, 'w'));
     }
-}
+};
 
-async function combineImages(staticPath: string, markerPath: string, destinationPath: string, marker: Marker, scale: number, centerLat: number, centerLon: number, zoom: number) {
+export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: string): Promise<void> => {
+    console.log(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
+    const args = Array<string>();
+    for (let i = 0; i < grids.length; i++) {
+        const grid = grids[i];
+        args.push('\\(');
+        args.push(grid.firstPath);
+        //for (let j = 0; j < grid.images.length; j++) {
+        grid.images.forEach((image: any) => {
+            args.push(image.path);
+            if (image.direction === CombineDirection.Bottom) {
+                args.push('-append');
+            } else {
+                args.push('+append');
+            }
+        });
+        args.push('\\)');
+        if (grid.direction === CombineDirection.Bottom) {
+            args.push('-append');
+        } else {
+            args.push('+append');
+        }
+    }
+    args.push(destinationPath);
+
+    //console.log('Grid Args:', args);
+    try {
+        const shell = await exec('/usr/local/bin/convert', args);
+        console.log('Magick CombineImagesGrid:', shell);
+    } catch (e) {
+        console.error('Failed to run magick:', e);
+    }
+};
+
+export const combineImages = async (staticPath: string, markerPath: string, destinationPath: string, marker: Marker, scale: number, centerLat: number, centerLon: number, zoom: number): Promise<void> => {
     //console.log(`Combine Images [StaticPath: ${staticPath}, MarkerPath: ${markerPath}, DestinationPath: ${destinationPath}, Marker: ${marker}, Scale: ${scale}, CenterLat: ${centerLat}, CenterLon: ${centerLon}, Zoom: ${zoom}]`);
     const realOffset = getRealOffset(
         { latitude: marker.latitude, longitude: marker.longitude },
@@ -112,9 +169,9 @@ async function combineImages(staticPath: string, markerPath: string, destination
         destinationPath
     ]);
     console.log('Magick CombineImages:', shell);
-}
+};
 
-async function drawPolygon(staticPath: string, destinationPath: string, polygon: Polygon, scale: number, centerLat: number, centerLon: number, zoom: number, width: number, height: number) {
+export const drawPolygon = async (staticPath: string, destinationPath: string, polygon: Polygon, scale: number, centerLat: number, centerLon: number, zoom: number, width: number, height: number): Promise<void> => {
     const points = [];
     const polygons = JSON.parse(polygon.path);
     for (let i = 0; i < polygons.length; i++) {
@@ -141,7 +198,7 @@ async function drawPolygon(staticPath: string, destinationPath: string, polygon:
     polygonPath = polygonPath.slice(0, polygonPath.length - 1);
     const shell = await exec('/usr/local/bin/convert', [
         staticPath,
-        '-strokewidth', polygon.stroke_width,
+        '-strokewidth', polygon.stroke_width?.toString(),
         '-fill', polygon.fill_color,
         '-stroke', polygon.stroke_color,
         '-gravity', 'Center',
@@ -149,9 +206,9 @@ async function drawPolygon(staticPath: string, destinationPath: string, polygon:
         destinationPath 
     ]);
     console.log('Magick DrawPolygon:', shell);
-}
+};
 
-function getRealOffset(at: { latitude: number, longitude: number }, relativeTo: { latitude: number, longitude: number }, zoom: number, scale: number, extraX: number, extraY: number) {
+export const getRealOffset = (at: { latitude: number, longitude: number }, relativeTo: { latitude: number, longitude: number }, zoom: number, scale: number, extraX: number, extraY: number): { x: number, y: number} => {
     let realOffsetX: number;
     let realOffsetY: number;
     if (relativeTo.latitude === at.latitude && relativeTo.longitude === at.longitude) {
@@ -173,16 +230,4 @@ function getRealOffset(at: { latitude: number, longitude: number }, relativeTo: 
         x: realOffsetX + extraX * scale,
         y: realOffsetY + extraY * scale
     };
-}
-
-export {
-    fileExists,
-    fileLastModifiedTime,
-    getData,
-    downloadFile,
-    md5,
-    getHashCode,
-    touch,
-    combineImages,
-    drawPolygon
 };
