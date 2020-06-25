@@ -19,7 +19,7 @@
 - Clone repository `git clone https://github.com/versx/NodeTileserverCache`
 - Change directory to cloned folder `cd NodeTileserverCache`
 - Install dependencies, run `npm install`
-- Install Typescript, run `npm install -g typescript`
+- Install Typescript, run `sudo npm install -g typescript`
 - Copy example.env to .env `cp example.env .env`
 - Fill out `.env` environment config (defaults are fine, except for `TILE_SERVER_URL`)
 - Start `npm run start`
