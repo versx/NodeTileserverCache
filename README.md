@@ -2,16 +2,27 @@
 
 ## Installing
 
+**Using Docker**
 - Install Docker
 - Create a new folder to store the yml file in and change into it: `mkdir TileServer && cd TileServer`
 - Load the yml: `wget https://raw.githubusercontent.com/versx/NodeTileserverCache/master/docker-compose.yml`
 - Edit the docker-compose.yml file if you want to change defaults. Default will work fine.
-- Create a new folder to store TileServer data in and chagne into it: `mkdir TileServer && cd TileServer`
+- Create a new folder to store TileServer data in and change directory: `mkdir TileServer && cd TileServer`
 - Get Download command from https://openmaptiles.com/downloads/planet/ for your region.
 - Download the file using wget.
 - Rename file to end in .mbtiles if it got named incorrectly
 - Change one layer back into the folder where the docker-compose.yml file is located: `cd ..`
 - Start and attach to logs: `docker-compose up -d && docker-compose logs -f`
+
+**Manually**
+- Install [tileserver-gl](https://github.com/maptiler/tileserver-gl) either using docker or on the system itself.
+- Clone repository `git clone https://github.com/versx/NodeTileserverCache`
+- Change directory to cloned folder `cd NodeTileserverCache`
+- Install dependencies, run `npm install`
+- Install Typescript, run `npm install -g typescript`
+- Copy example.env to .env `cp example.env .env`
+- Fill out `.env` environment config (defaults are fine, except for `TILE_SERVER_URL`)
+- Start `npm run start`
 
 ## Formats
 
