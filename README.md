@@ -8,14 +8,19 @@
 - Load the yml: `wget https://raw.githubusercontent.com/versx/NodeTileserverCache/master/docker-compose.yml`
 - Edit the docker-compose.yml file if you want to change defaults. Default will work fine.
 - Create a new folder to store TileServer data in and change directory: `mkdir TileServer && cd TileServer`
-- Get Download command from https://openmaptiles.com/downloads/planet/ for your region.
+- Get Download command from https://openmaptiles.com/downloads/ for your region.
 - Download the file using wget.
-- Rename file to end in .mbtiles if it got named incorrectly
+- Rename file to end in .mbtiles if it got named incorrectly.
 - Change one layer back into the folder where the docker-compose.yml file is located: `cd ..`
 - Start and attach to logs: `docker-compose up -d && docker-compose logs -f`
 
 **Manually**
 - Install [tileserver-gl](https://github.com/maptiler/tileserver-gl) either using docker or on the system itself.
+- Get Download command from https://openmaptiles.org/downloads/ for your region.
+- Download the file using wget.
+- Rename file to end in .mbtiles if it got named incorrectly.
+- Launch tileserver-gl and provide .mbtiles file in launch parameters.
+- Install ImageMagick `sudo apt-get install -y imagemagick && sudo cp /usr/bin/convert /usr/local/bin`
 - Clone repository `git clone https://github.com/versx/NodeTileserverCache`
 - Change directory to cloned folder `cd NodeTileserverCache`
 - Install dependencies, run `npm install`
