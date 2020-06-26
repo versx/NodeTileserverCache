@@ -8,7 +8,7 @@
     "scale": 1,
     "markers": [
         {
-            "url": "http://rdmurl/static/img/pokemon/{{id}}-{{form}}.png",
+            "url": "http://rdmurl/static/img/pokemon/{{id}}{{#form}}-{{form}}{{/form}}.png",
             "latitude": {{lat}},
             "longitude": {{lon}},
             "width": 50,

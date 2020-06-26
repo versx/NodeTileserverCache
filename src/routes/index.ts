@@ -209,7 +209,7 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
     const template = Mustache.render(templateData, req.query);
     const tplObj = JSON.parse(template);
     const staticMap = Object.assign(new StaticMap(), tplObj);
-    //console.log('StaticMap:', staticMap);
+    //console.log('Template StaticMap:', staticMap);
 
     let fileName: string;
     try {
@@ -612,7 +612,8 @@ export const startCacheCleaners = (): void => {
     );
     new CacheCleaner(StaticMultiCacheDir,
         parseInt(process.env.STATIC_MULTI_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.STATIC_MULTI_CACHE_DELAY_SECONDS || '3600'));
+        parseInt(process.env.STATIC_MULTI_CACHE_DELAY_SECONDS || '3600')
+    );
     new CacheCleaner(StaticWithMarkersCacheDir,
         parseInt(process.env.STATIC_MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
         parseInt(process.env.STATIC_MARKER_CACHE_DELAY_SECONDS || '3600')

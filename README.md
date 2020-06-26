@@ -3,14 +3,13 @@
 ## Installing  
 
 - Install Docker  
-- Crate a new folder to store the yml file in and change into it: `mkdir TileServer && cd TileServer`  
-- Load the yml: `wget https://raw.githubusercontent.com/versx/NodeTileserverCache/master/docker-compose.yml`  
-- Edit the docker-compose.yml file if you want to change defaults. Default will work fine.  
-- Crate a new folder to store TileServer data in and chagne into it: `mkdir TileServer && cd TileServer`  
-- Get Download command from https://openmaptiles.com/downloads/planet/ for your region.  
-- Download the file using wget.  
-- Rename file to end in .mbtiles if it got named incorrectly  
-- Change one layer back into the folder where the docker-compose.yml file is located: `cd ..`  
+- Create a new folder to store the yml file in and change into it: `mkdir TileServer && cd TileServer`  
+- Clone the repository `git clone https://github.com/versx/NodeTileserverCache`  
+- Copy and edit the `.env` config file. `cp example.env .env` and `vi .env`  
+- Get the download command from https://openmaptiles.com/downloads/ for your region.  
+- Download the file using the wget from OpenMapTiles website.  
+- Rename file to end in `.mbtiles` extension if the name is incorrect.  
+- Change one folder back into the root NodeTileserverCache project folder where the docker-compose.yml file is located: `cd ..`  
 - Start and attach to logs: `docker-compose up -d && docker-compose logs -f`  
 
 ## Formats  
@@ -74,6 +73,7 @@ https://tileserverurl/static/klokantech-basic/47.263416/11.400512/17/500/500/2/p
 https://tileserverurl/static/klokantech-basic/47.263416/11.400512/17/500/500/2/png?markers=%5B%7B%22url%22%3A%22https%3A%2F%2Fraw.githubusercontent.com%2Fnileplumb%2FPkmnShuffleMap%2Fmaster%2FNOVA_Sprites%2F201.png%22%2C%22height%22%3A50%2C%22width%22%3A50%2C%22x_offset%22%3A0%2C%22y_offset%22%3A0%2C%22latitude%22%3A%2047.263416%2C%22longitude%22%3A%2011.400512%7D%5D  
 
 ## TODO
+- Pass through `.env` config to `docker-compose.yml` environment section
 - Test tiles  
 - Fix combineImagesGrid  
 - Cleanup code  
