@@ -1,27 +1,49 @@
-# NodeTileserverCache  
+# NodeTileserverCache
 
-## Installing  
+## Installing
 
-- Install Docker  
-- Create a new folder to store the yml file in and change into it: `mkdir TileServer && cd TileServer`  
+**Using Docker**
+- Install Docker
 - Clone the repository `git clone https://github.com/versx/NodeTileserverCache`  
-- Copy and edit the `.env` config file. `cp example.env .env` and `vi .env`  
+- Change directory into cloned folder `cp NodeTileserverCache`  
+- Create a new folder to store the `.mbtiles` file in and change directories to it: `mkdir TileServer && cd TileServer`  
 - Get the download command from https://openmaptiles.com/downloads/ for your region.  
 - Download the file using the wget from OpenMapTiles website.  
-- Rename file to end in `.mbtiles` extension if the name is incorrect.  
+- Rename downloaded file to end in `.mbtiles` extension if the name is incorrect.  
 - Change one folder back into the root NodeTileserverCache project folder where the docker-compose.yml file is located: `cd ..`  
+- Copy and edit the `.env` config file. `cp example.env .env` and `vi .env`  
 - Start and attach to logs: `docker-compose up -d && docker-compose logs -f`  
 
-## Formats  
+**Manually**
+- Install [tileserver-gl](https://github.com/maptiler/tileserver-gl) either using docker or on the system itself.
+- Get Download command from https://openmaptiles.org/downloads/ for your region.
+- Download the file using wget.
+- Rename file to end in .mbtiles if it got named incorrectly.
+- Launch tileserver-gl and provide .mbtiles file in launch parameters.
+- Install ImageMagick `sudo apt-get install -y imagemagick && sudo cp /usr/bin/convert /usr/local/bin`
+- Clone repository `git clone https://github.com/versx/NodeTileserverCache`
+- Change directory to cloned folder `cd NodeTileserverCache`
+- Install dependencies, run `npm install`
+- Install Typescript, run `sudo npm install -g typescript`
+- Copy example.env to .env `cp example.env .env`
+- Fill out `.env` environment config (defaults are fine, except for `TILE_SERVER_URL`)
+- Start `npm run start`
 
-- Tiles: `tile/{style}/{z}/{x}/{y}/{scale}/{format}`  
-- StaticMap: `static/{style}/{lat}/{lon}/{zoom}/{width}/{height}/{scale}/{format}`  
+## Formats
 
-### Style  
-The default included styles are:  
-- klokantech-basic  
-- osm-bright  
-Checkout https://tileserver.readthedocs.io for a guide on how to add more styles.  
+- Tiles: 
+    - `GET tile/{style}/{z}/{x}/{y}/{scale}/{format}`
+- StaticMap: 
+    - `POST /staticmap` (StaticMap Object in JSON Format as POST body)
+    - `GET /staticmap` (SaticMap Object in URL Parameters. Markers and Polygons need to be URL-encoded)
+    - `GET /staticmap/:template` (Template Enviroment parsed from URL Parameters. Parameters ending in `json` will be parsed as json. Multiple instances of same Parameter will be parsed as array)
+- MutliStaticMap:
+    - `POST /multistaticmap` (MultiStaticMap Object in JSON Format as POST body)
+    - `GET /multistaticmap/:template` (Template Enviroment parsed from URL Parameters. Parameters ending in `json` will be parsed as json. Multiple instances of same Parameter will be parsed as array)
+
+### Style
+Get a list of styles by visiting `/styles`
+Checkout https://tileserver.readthedocs.io for a guide on how to add more styles.
 
 ### Markers  
 StaticMap route accetps an url-ecoded JSON (check bellow) on `markers` query parameter.  
@@ -39,38 +61,233 @@ Example:
  },
  …
 ]
+
+### StaticMap
+StaticMap route accepts an StaticMap Object JSON Object as POST body:
+Example:
+```
+{
+  "style": string (check avilable styles at /styles),
+  "latitude": double,
+  "longitude": double,
+  "zoom": int,
+  "width": int,
+  "height": int,
+  "scale": int,
+  "format": string? (png, jpg, ...),
+  "bearing": double?,
+  "pitch": double?,
+  "markers": [Marker]?,
+  "polygons": [Geofence]?
+}
 ```
 
-### Polygons  
-StaticMap route accetps an url-ecoded JSON (check bellow) on `polygons` query parameter.  
-Example:  
+### MultiStaticMap (WIP)
+MultiStaticMap route accepts an MultiStaticMap JSON Object as POST Body:
+Example:
+```
+{
+  "grid": [
+    {
+      "direction": string (always "First"),
+      "maps": [
+        {
+          "direction": string (always "First"),
+          "map": StaticMap
+        }, {
+          "direction": string ("Right", or "Bottom"),
+          "map": StaticMap
+        }, 
+        ...
+      ]
+    }, {
+      "direction": string ("Right", or "Bottom"),
+      "maps": [
+        {
+          "direction": string (always "First"),
+          "map": StaticMap
+        }, {
+          "direction": string ("Right", or "Bottom"),
+          "map": StaticMap
+        }, 
+        ...
+      ]
+    },
+    ...
+  ]
+}
+```
+
+### Marker
+Marker JSON used in StaticMap:
+Example:
+```
+{
+  "url": string,
+  "height": int,
+  "width": int,
+  "x_offset": int,
+  "y_offset": int,
+  "latitude": double,
+  "longitude": double
+}
+```
+
+### Polygon
+Polygon JSON used in StaticMap:
+Example:
+```
+{
+  "fill_color": string (imagemagick color string),
+  "stroke_color": string (imagemagick color string),
+  "stroke_width": int,
+  "path": [
+    [double (lat), double (lon)],
+    [double, double],
+    ...
+  ]
+}
+```
+
+## Examples
+
+### Tiles
+https://tileserverurl/tile/klokantech-basic/{z}/{x}/{y}/2/png
+
+### StaticMap
+https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2
+
+### StaticMap with Markers
+`POST https://tileserverurl/staticmap`
 ```JSON
-[
-  {
-    "fill_color": "rgba(100.0%, 0.0%, 0.0%, 25.0%)",
-    "stroke_color": "black",
-    "stroke_width": 1,
-    "path": [
-      [10.0, 10.0],
-      [10.0, 11.0],
-      [11.0, 11.0],
-      [11.0, 10.0]
+{
+    "style": "klokantech-basic",
+    "latitude": 47.263416,
+    "longitude": 11.400512,
+    "zoom": 17,
+    "width": 500,
+    "height": 500,
+    "scale": 1,
+    "markers": [
+        {
+            "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/1200px-Map_marker.svg.png",
+            "latitude": 47.263416,
+            "longitude": 11.400512,
+            "width": 50,
+            "height": 50
+        }
     ]
-  }
- …
-]
+}
 ```
+![staticmap response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/staticmap.png)
 
-## Examples  
+### MultiStaticMap
+`POST https://tileserverurl/multistaticmap`
+```JSON
+{
+    "grid": [
+        {
+            "direction": "First",
+            "maps": [
+                {
+                    "direction": "First",
+                    "map": {
+                        "style": "klokantech-basic",
+                        "latitude": 47.263416,
+                        "longitude": 11.400512,
+                        "zoom": 17,
+                        "width": 500,
+                        "height": 250,
+                        "scale": 1,
+                        "markers": [
+                            {
+                                "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/1200px-Map_marker.svg.png",
+                                "latitude": 47.263416,
+                                "longitude": 11.400512,
+                                "width": 50,
+                                "height": 50
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "direction": "Bottom",
+            "maps": [
+                {
+                    "direction": "First",
+                    "map": {
+                        "style": "klokantech-basic",
+                        "latitude": 47.263416,
+                        "longitude": 11.400512,
+                        "zoom": 15,
+                        "width": 300,
+                        "height": 100,
+                        "scale": 1,
+                        "markers": [
+                            {
+                                "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/1200px-Map_marker.svg.png",
+                                "latitude": 47.263416,
+                                "longitude": 11.400512,
+                                "width": 25,
+                                "height": 25
+                            }
+                        ]
+                    }
+                },
+                {
+                    "direction": "Right",
+                    "map": {
+                        "style": "klokantech-basic",
+                        "latitude": 47.263416,
+                        "longitude": 11.400512,
+                        "zoom": 12,
+                        "width": 200,
+                        "height": 100,
+                        "scale": 1,
+                        "markers": [
+                            {
+                                "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Map_marker.svg/1200px-Map_marker.svg.png",
+                                "latitude": 47.263416,
+                                "longitude": 11.400512,
+                                "width": 25,
+                                "height": 25
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+![multistaticmap response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/multistaticmap.png)
 
-### Tiles  
-https://tileserverurl/tile/klokantech-basic/{z}/{x}/{y}/2/png  
-
-### StaticMap  
-https://tileserverurl/static/klokantech-basic/47.263416/11.400512/17/500/500/2/png  
-
-### StaticMap with Markers  
-https://tileserverurl/static/klokantech-basic/47.263416/11.400512/17/500/500/2/png?markers=%5B%7B%22url%22%3A%22https%3A%2F%2Fraw.githubusercontent.com%2Fnileplumb%2FPkmnShuffleMap%2Fmaster%2FNOVA_Sprites%2F201.png%22%2C%22height%22%3A50%2C%22width%22%3A50%2C%22x_offset%22%3A0%2C%22y_offset%22%3A0%2C%22latitude%22%3A%2047.263416%2C%22longitude%22%3A%2011.400512%7D%5D  
+### StaticMap using Templates
+`pokemon.json` file in `Templates` directory (uses [Stencil](https://stencil.fuller.li) as TemplatingEngine):
+```
+{
+    "style": "klokantech-basic",
+    "latitude": {{lat}},
+    "longitude": {{lon}},
+    "zoom": 15,
+    "width": 500,
+    "height": 250,
+    "scale": 1,
+    "markers": [
+        {
+            "url": "https://rdmurl/static/img/pokemon/{{id}}{% if form %}-{{form}}{% endif %}.png",
+            "latitude": {{lat}},
+            "longitude": {{lon}},
+            "width": 50,
+            "height": 50
+        }
+    ]
+}
+```
+`GET https://tileserverurl/staticmap/pokemon?id=201&lat=47.263416&lon=11.400512&form=5`
+![staticmap-template response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/staticmaptemplate.png)
 
 ## TODO
 - Pass through `.env` config to `docker-compose.yml` environment section
