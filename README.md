@@ -4,15 +4,15 @@
 
 **Using Docker**
 - Install Docker
-- Create a new folder to store the yml file in and change into it: `mkdir TileServer && cd TileServer`
-- Load the yml: `wget https://raw.githubusercontent.com/versx/NodeTileserverCache/master/docker-compose.yml`
-- Edit the docker-compose.yml file if you want to change defaults. Default will work fine.
-- Create a new folder to store TileServer data in and change directory: `mkdir TileServer && cd TileServer`
-- Get Download command from https://openmaptiles.com/downloads/ for your region.
-- Download the file using wget.
-- Rename file to end in .mbtiles if it got named incorrectly.
-- Change one layer back into the folder where the docker-compose.yml file is located: `cd ..`
-- Start and attach to logs: `docker-compose up -d && docker-compose logs -f`
+- Clone the repository `git clone https://github.com/versx/NodeTileserverCache`  
+- Change directory into cloned folder `cp NodeTileserverCache`  
+- Create a new folder to store the `.mbtiles` file in and change directories to it: `mkdir TileServer && cd TileServer`  
+- Get the download command from https://openmaptiles.com/downloads/ for your region.  
+- Download the file using the wget from OpenMapTiles website.  
+- Rename downloaded file to end in `.mbtiles` extension if the name is incorrect.  
+- Change one folder back into the root NodeTileserverCache project folder where the docker-compose.yml file is located: `cd ..`  
+- Copy and edit the `.env` config file. `cp example.env .env` and `vi .env`  
+- Start and attach to logs: `docker-compose up -d && docker-compose logs -f`  
 
 **Manually**
 - Install [tileserver-gl](https://github.com/maptiler/tileserver-gl) either using docker or on the system itself.
@@ -44,6 +44,23 @@
 ### Style
 Get a list of styles by visiting `/styles`
 Checkout https://tileserver.readthedocs.io for a guide on how to add more styles.
+
+### Markers  
+StaticMap route accetps an url-ecoded JSON (check bellow) on `markers` query parameter.  
+Example:  
+```JSON
+[
+  {
+    "url": "Marker Image URL",
+    "height": 50,
+    "width": 50,
+    "x_offset": 0,
+    "y_offset": 0,
+    "latitude": 10.0,
+    "longitude": 10.0
+ },
+ …
+]
 
 ### StaticMap
 StaticMap route accepts an StaticMap Object JSON Object as POST body:
@@ -273,6 +290,7 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
 ![staticmap-template response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/staticmaptemplate.png)
 
 ## TODO
+- Pass through `.env` config to `docker-compose.yml` environment section
 - Test tiles  
 - Fix combineImagesGrid  
 - Cleanup code  

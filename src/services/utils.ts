@@ -7,10 +7,10 @@ import * as crypto from 'crypto';
 import btoa from 'btoa';
 
 import { exec } from './spawn';
-import { Grid } from './models/grid';
-import { Marker } from './models/marker';
-import { Polygon } from './models/polygon';
-import { CombineDirection } from './data/combine-direction';
+import { Grid } from '../models/grid';
+import { Marker } from '../models/marker';
+import { Polygon } from '../models/polygon';
+import { CombineDirection } from '../data/combine-direction';
 
 export const fileExists = async (path: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
