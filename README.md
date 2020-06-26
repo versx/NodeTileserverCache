@@ -65,32 +65,32 @@ Example:
 }
 ```
 
-### MultiStaticMap
+### MultiStaticMap (WIP)
 MultiStaticMap route accepts an MultiStaticMap JSON Object as POST Body:
 Example:
 ```
 {
   "grid": [
     {
-      "direction": string (always "first"),
+      "direction": string (always "First"),
       "maps": [
         {
-          "direction": string (always "first"),
+          "direction": string (always "First"),
           "map": StaticMap
         }, {
-          "direction": string ("right", or "bottom"),
+          "direction": string ("Right", or "Bottom"),
           "map": StaticMap
         }, 
         ...
       ]
     }, {
-      "direction": string ("right", or "bottom"),
+      "direction": string ("Right", or "Bottom"),
       "maps": [
         {
-          "direction": string (always "first"),
+          "direction": string (always "First"),
           "map": StaticMap
         }, {
-          "direction": string ("right", or "bottom"),
+          "direction": string ("Right", or "Bottom"),
           "map": StaticMap
         }, 
         ...
@@ -170,10 +170,10 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
 {
     "grid": [
         {
-            "direction": "first",
+            "direction": "First",
             "maps": [
                 {
-                    "direction": "first",
+                    "direction": "First",
                     "map": {
                         "style": "klokantech-basic",
                         "latitude": 47.263416,
@@ -196,10 +196,10 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
             ]
         },
         {
-            "direction": "bottom",
+            "direction": "Bottom",
             "maps": [
                 {
-                    "direction": "first",
+                    "direction": "First",
                     "map": {
                         "style": "klokantech-basic",
                         "latitude": 47.263416,
@@ -220,7 +220,7 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
                     }
                 },
                 {
-                    "direction": "right",
+                    "direction": "Right",
                     "map": {
                         "style": "klokantech-basic",
                         "latitude": 47.263416,
