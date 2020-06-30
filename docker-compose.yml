@@ -7,6 +7,8 @@ services:
     tty: true
     volumes:
       - ./TileServer:/data
+    ports:
+      - 8080:80
   cache:
     image: node:12.16.2-alpine
     container_name: tileserver-cache
@@ -21,7 +23,7 @@ services:
         apk add imagemagick
         cp /usr/bin/convert /usr/local/bin
         npm install
-        sudo npm install -g typescript
+        npm install -g typescript
         tsc
         npm start
     volumes:
