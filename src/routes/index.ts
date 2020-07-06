@@ -112,7 +112,7 @@ export const getStyles = async (req: Request, res: Response): Promise<void> => {
  * GET /tile
  */
 export const getTile = async (req: Request, res: Response): Promise<void> => {
-    console.log('Tile:', req.params);
+    //console.log('Tile:', req.params);
     const style = req.params.style;
     const z = parseInt(req.params.z);
     const x = parseFloat(req.params.x);
@@ -156,7 +156,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
  * GET /static
  */
 export const getStatic = async (req: Request, res: Response): Promise<void> => {
-    console.log('Static:', req.params);
+    //console.log('Static:', req.params);
     const style = req.params.style;
     const lat = parseFloat(req.params.lat);
     const lon = parseFloat(req.params.lon);
@@ -170,7 +170,7 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
     const polygons: Polygon[] = parsePolygons(req.query.polygons?.toString() || '');
     const markers: Marker[] = parseMarkers(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    console.log('Static map:', staticMap);
+    //console.log('Static map:', staticMap);
 
     let fileName: string;
     try {
@@ -248,7 +248,7 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
     const polygons: Polygon[] = parsePolygons(req.query.polygons?.toString() || '');
     const markers: Marker[] = parseMarkers(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    console.log('Static map:', staticMap);
+    //console.log('Static map:', staticMap);
 
     let fileName: string;
     try {
@@ -287,7 +287,7 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
     const polygons: Polygon[] = parsePolygons(req.body.polygons);
     const markers: Marker[] = parseMarkers(req.body.markers);
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    console.log('Static map:', staticMap);
+    //console.log('Static map:', staticMap);
 
     let fileName: string;
     try {
@@ -399,7 +399,7 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
             staticMap.polygons.forEach((polygon: Polygon) => drawables.push(Object.assign(new Polygon(), polygon)));
         }
 
-        console.log('Drawable Objects:', drawables);
+        //console.log('Drawable Objects:', drawables);
         if (drawables.length > 0) {
             const hashes = drawables.map(drawable => drawable.hashString);
             const fileNameWithMarker = path.resolve(StaticWithMarkersCacheDir, `${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${hashes.join(',')}-${staticMap.scale}.${staticMap.format}`);
@@ -431,7 +431,6 @@ const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
                                 HitStats.markerHit(staticMap.style, false);
                             } else {
                                 // Download marker to cache for future use.
-                                console.log(`Loading Marker: ${marker.url}`);
                                 await utils.downloadFile(marker.url, markerFileName);
                                 HitStats.markerHit(staticMap.style, true);
                             }
@@ -528,7 +527,7 @@ const parseMarkers = (markersQuery: string): Marker[] => {
         const markers = JSON.parse(markersJson);
         if (markers.length > 0) {
             markers.forEach((marker: Marker) => {
-                console.log('Marker:', marker);
+                //console.log('Marker:', marker);
                 list.push(Object.assign(new Marker(), marker));
             });
         }
