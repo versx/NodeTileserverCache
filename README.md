@@ -48,7 +48,7 @@ Get a list of styles by visiting `/styles`
 Checkout https://tileserver.readthedocs.io for a guide on how to add more styles.
 
 ### Markers  
-StaticMap route accetps an url-ecoded JSON (check bellow) on `markers` query parameter.  
+StaticMap route accepts an url-ecoded JSON (check bellow) on `markers` query parameter.  
 Example:  
 ```JSON
 [
@@ -63,9 +63,10 @@ Example:
  },
  …
 ]
+```
 
 ### StaticMap
-StaticMap route accepts an StaticMap Object JSON Object as POST body:
+StaticMap route accepts a StaticMap Object JSON Object as POST body:
 Example:
 ```
 {
@@ -85,7 +86,7 @@ Example:
 ```
 
 ### MultiStaticMap (WIP)
-MultiStaticMap route accepts an MultiStaticMap JSON Object as POST Body:
+MultiStaticMap route accepts a MultiStaticMap JSON Object as POST Body:
 Example:
 ```
 {
@@ -157,7 +158,7 @@ Example:
 https://tileserverurl/tile/klokantech-basic/{z}/{x}/{y}/2/png
 
 ### StaticMap
-https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2
+https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2[?markers=[]&polygons=[]]
 
 ### StaticMap with Markers
 `POST https://tileserverurl/staticmap`
@@ -267,7 +268,7 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
 ![multistaticmap response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/multistaticmap.png)
 
 ### StaticMap using Templates
-`pokemon.json` file in `Templates` directory (uses [Stencil](https://stencil.fuller.li) as TemplatingEngine):
+`pokemon.json` file in `Templates` directory (uses [Mustache](https://mustache.github.io) as TemplatingEngine):
 ```
 {
     "style": "klokantech-basic",
@@ -279,7 +280,7 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
     "scale": 1,
     "markers": [
         {
-            "url": "https://rdmurl/static/img/pokemon/{{id}}{% if form %}-{{form}}{% endif %}.png",
+            "url": "https://rdmurl/static/img/pokemon/{{id}}{{#form}}-{{form}}{{/form}}.png",
             "latitude": {{lat}},
             "longitude": {{lon}},
             "width": 50,
@@ -288,12 +289,11 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
     ]
 }
 ```
-`GET https://tileserverurl/staticmap/pokemon?id=201&lat=47.263416&lon=11.400512&form=5`
+`GET https://tileserverurl/staticmap/pokemon.json?id=201&lat=47.263416&lon=11.400512&form=5`
 ![staticmap-template response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/staticmaptemplate.png)
 
 ## TODO
 - Pass through `.env` config to `docker-compose.yml` environment section
-- Test tiles  
 - Fix combineImagesGrid  
 - Cleanup code  
 
