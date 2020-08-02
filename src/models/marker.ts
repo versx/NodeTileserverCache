@@ -24,4 +24,19 @@ export class Marker implements Drawable {
         this.y_offset = y_offset || 0;
         this.hashString = 'M' + utils.getHashCode(this);
     }
+
+    public static parse(markersQuery: string): Marker[] {
+        const list: Marker[] = [];
+        const markersJson = (markersQuery || '')?.replace(/%22/g, '"');
+        if (markersJson) {
+            const markers = JSON.parse(markersJson);
+            if (markers.length > 0) {
+                markers.forEach((marker: Marker) => {
+                    //console.log('Marker:', marker);
+                    list.push(Object.assign(new Marker(), marker));
+                });
+            }
+        }
+        return list;
+    }
 }

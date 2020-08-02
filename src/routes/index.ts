@@ -2,9 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Request, Response } from 'express';
 
-import { CombineDirection } from '../data/combine-direction';
-import { Drawable } from '../models/drawable';
-import { Grid } from '../models/grid';
+import * as globals from '../data/globals';
 import { Marker } from '../models/marker';
 import { MultiStaticMap } from '../models/multi-staticmap';
 import { Polygon } from '../models/polygon';
@@ -13,17 +11,6 @@ import { CacheCleaner } from '../services/cache-cleaner';
 import { HitStats } from '../services/stats';
 import * as utils from '../services/utils';
 
-const ValidFormats = [ 'png', 'jpg' ];
-
-// Cache directory paths
-const CacheDir = path.resolve(__dirname, '../../Cache');
-const TileCacheDir = path.resolve(CacheDir, 'Tile');
-const StaticCacheDir = path.resolve(CacheDir, 'Static');
-const StaticMultiCacheDir = path.resolve(CacheDir, 'StaticMulti');
-const StaticWithMarkersCacheDir = path.resolve(CacheDir, 'StaticWithMarkers');
-const MarkerCacheDir = path.resolve(CacheDir, 'Marker');
-
-const TemplatesDir = path.resolve(__dirname, '../../templates');
 
 /**
  * GET /
@@ -118,8 +105,8 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     const y = parseFloat(req.params.y);
     const scale = parseInt(req.params.scale);
     const format = req.params.format;
-    const fileName = path.resolve(TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
-    if (scale >= 1 && ValidFormats.includes(format)) {
+    const fileName = path.resolve(globals.TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
+    if (scale >= 1 && globals.ValidFormats.includes(format)) {
         if (await utils.fileExists(fileName)) {
             utils.touch(fileName);
             HitStats.tileHit(style, false);
@@ -166,14 +153,14 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
     const format = req.params.format;
     const bearing = parseInt(req.params.bearing || '0');
     const pitch = parseInt(req.params.pitch || '0');
-    const polygons: Polygon[] = parsePolygons(req.query.polygons?.toString() || '');
-    const markers: Marker[] = parseMarkers(req.query.markers?.toString() || '');
+    const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
+    const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
     //console.log('Static map:', staticMap);
 
     let fileName: string;
     try {
-        fileName = await generateStaticMap(staticMap);
+        fileName = await staticMap.generate();
     } catch (e) {
         console.error('[ERROR] Failed to generate staticmap:', e);
         return res.send(e)
@@ -206,7 +193,7 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
 
     let fileName: string;
     try {
-        fileName = await generateStaticMap(staticMap);
+        fileName = await staticMap.generate();
     } catch (e) {
         console.error('[ERROR] Failed to generate staticmap from template:', e);
         return res.send(e)
@@ -238,14 +225,14 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
     const format = req.query.format?.toString() || 'png';
     const bearing = parseInt(req.query.bearing?.toString() || '0');
     const pitch = parseInt(req.query.pitch?.toString() || '0');
-    const polygons: Polygon[] = parsePolygons(req.query.polygons?.toString() || '');
-    const markers: Marker[] = parseMarkers(req.query.markers?.toString() || '');
+    const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
+    const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
     //console.log('Static map:', staticMap);
 
     let fileName: string;
     try {
-        fileName = await generateStaticMap(staticMap);
+        fileName = await staticMap.generate();
     } catch (e) {
         console.error('[ERROR] Failed to generate staticmap:', e);
         return res.send(e)
@@ -277,14 +264,14 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
     const format = req.body.format || 'png';
     const bearing = parseInt(req.body.bearing || '0');
     const pitch = parseInt(req.body.pitch || '0');
-    const polygons: Polygon[] = parsePolygons(req.body.polygons);
-    const markers: Marker[] = parseMarkers(req.body.markers);
+    const polygons: Polygon[] = Polygon.parse(req.body.polygons);
+    const markers: Marker[] = Marker.parse(req.body.markers);
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
     //console.log('Static map:', staticMap);
 
     let fileName: string;
     try {
-        fileName = await generateStaticMap(staticMap);
+        fileName = await staticMap.generate();
     } catch (e) {
         console.error('[ERROR] Failed to generate staticmap:', e);
         return res.send(e)
@@ -315,7 +302,7 @@ export const getMultiStaticMapTemplate = async (req: Request, res: Response): Pr
 
     let fileName: string;
     try {
-        fileName = await generateMultiStaticMap(multiStaticMap);
+        fileName = await multiStaticMap.generate();
     } catch (e) {
         console.error('[ERROR] Failed to generate multi staticmap:', e);
         return res.send(e)
@@ -342,7 +329,7 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
         const grid = req.body.grid;
         const multiStaticMap = new MultiStaticMap(grid);
         console.log('Multi Static map:', multiStaticMap);
-        fileName = await generateMultiStaticMap(multiStaticMap);
+        fileName = await multiStaticMap.generate();
     } catch (e) {
         console.error('[ERROR] Failed to generate multi staticmap:', e);
         return res.send(e)
@@ -361,224 +348,47 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
 };
 
 
-// Map Generators
-const generateStaticMap = async (staticMap: StaticMap): Promise<string> => {
-    if (staticMap.scale >= 1 && ValidFormats.includes(staticMap.format || '')) {
-        const fileName = path.resolve(StaticCacheDir, `${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${staticMap.scale}.${staticMap.format}`);
-        // Valid format, check if static file already exists
-        if (await utils.fileExists(fileName)) {
-            // Static file exists, update last modified time
-            utils.touch(fileName);
-            HitStats.staticHit(staticMap.style, false);
-        } else {
-            // Static file does not exist, download from tileserver
-            const scaleString = staticMap.scale === 1 ? '' : `@${staticMap.scale}x`;
-            const tileUrl = `${process.env.TILE_SERVER_URL}/styles/${staticMap.style}/static/${staticMap.longitude},${staticMap.latitude},${staticMap.zoom}/${staticMap.width}x${staticMap.height}${scaleString}.${staticMap.format}`;
-            await utils.downloadFile(tileUrl, fileName);
-            HitStats.staticHit(staticMap.style, true);
-        }
-
-        const drawables: Array<Drawable> = [];
-        if (staticMap.markers && staticMap.markers.length > 0) {
-            staticMap.markers.forEach((marker: Marker) => drawables.push(Object.assign(new Marker(), marker)));
-        }
-        if (staticMap.polygons && staticMap.polygons.length > 0) {
-            staticMap.polygons.forEach((polygon: Polygon) => drawables.push(Object.assign(new Polygon(), polygon)));
-        }
-
-        //console.log('Drawable Objects:', drawables);
-        if (drawables.length > 0) {
-            const hashes = drawables.map(drawable => drawable.hashString);
-            const fileNameWithMarker = path.resolve(StaticWithMarkersCacheDir, `${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${hashes.join(',')}-${staticMap.scale}.${staticMap.format}`);
-            if (await utils.fileExists(fileNameWithMarker)) {
-                utils.touch(fileName);
-                HitStats.staticMarkerHit(staticMap.style, false);
-            } else {
-                let hashes = '';
-                let fileNameWithMarkerFull = fileName;
-                for (let i = 0; i < drawables.length; i++) {
-                    const drawable = drawables[i];
-                    //console.log('Hash:', drawable.hashString);
-                    hashes += drawable.hashString;
-                    const fileNameWithMarker = path.resolve(StaticWithMarkersCacheDir, `${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${hashes}-${staticMap.scale}.${staticMap.format}`);
-                    if (await utils.fileExists(fileNameWithMarker)) {
-                        // Static with marker file exists, touch for last modified timestamp.
-                        utils.touch(fileName);
-                        HitStats.staticMarkerHit(staticMap.style, false);
-                    } else {
-                        // Static with marker file does not exist, check if marker downloaded.
-                        console.log(`Building Static: ${staticMap.style}-${staticMap.latitude}-${staticMap.longitude}-${staticMap.zoom}-${staticMap.width}-${staticMap.height}-${hashes}-${staticMap.scale}.${staticMap.format}`);
-                        if (drawable instanceof Marker) {
-                            const marker = Object.assign(new Marker(), drawable);
-                            const markerUrlEncoded = utils.md5(marker.url);
-                            const markerFileName = path.resolve(MarkerCacheDir, markerUrlEncoded);
-                            if (await utils.fileExists(markerFileName)) {
-                                // Marker already downloaded, touch for last modified timestamp.
-                                utils.touch(fileName);
-                                HitStats.markerHit(staticMap.style, false);
-                            } else {
-                                // Download marker to cache for future use.
-                                await utils.downloadFile(marker.url, markerFileName);
-                                HitStats.markerHit(staticMap.style, true);
-                            }
-                            try {
-                                await utils.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, marker, staticMap.scale, staticMap.latitude, staticMap.longitude, staticMap.zoom);
-                            } catch (e) {
-                                console.error('[ERROR]', e);
-                            }
-                        } else if (drawable instanceof Polygon) {
-                            const polygon = Object.assign(new Polygon(), drawable);
-                            await utils.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, polygon, staticMap.scale, staticMap.latitude, staticMap.longitude, staticMap.zoom, staticMap.width, staticMap.height);
-                        }
-                        HitStats.staticMarkerHit(staticMap.style, true);
-                    }
-                    hashes += ',';
-                    fileNameWithMarkerFull = fileNameWithMarker;
-                }
-            }
-            // Serve static file
-            return fileNameWithMarker;
-        } else {
-            // Serve static file
-            return fileName;
-        }
-    } else {
-        return '';
-    }
-};
-
-const generateMultiStaticMap = async (multiStaticMap: MultiStaticMap): Promise<string> => {
-    if (multiStaticMap.grid.length <= 0) {
-        console.error('At least one grid is required');
-        return '';
-    }
-    if (multiStaticMap.grid[0].direction !== CombineDirection.First) {
-        console.error('First grid requires direction: "first"');
-        return '';
-    }
-    for (let i = 1; i < multiStaticMap.grid.length - 1; i++) {
-        if (multiStaticMap.grid[i].direction === CombineDirection.First) {
-            console.error('Only first gird is allowed to be direction: "first"');
-            return '';
-        }
-    }
-    for (let i = 0; i < multiStaticMap.grid.length; i++) {
-        const grid = multiStaticMap.grid[i];
-        if (grid.maps[0].direction !== CombineDirection.First) {
-            console.error('First map in grid requires direction: "first"');
-            return '';
-        }
-        for (let j = 1; j < grid.maps.length - 1; j++) {
-            const map = grid.maps[j];
-            if (map.direction === CombineDirection.First) {
-                console.error('Only first map in grid is allowed to be direction: "first"');
-            }
-        }
-    }
-
-    const grids = Array<Grid>();
-    const fileNameWithMarker = `${StaticMultiCacheDir}/${multiStaticMap.hashString}.png`;
-    if (await utils.fileExists(fileNameWithMarker)) {
-        console.log('Serving MutliStatic:', multiStaticMap);
-        return fileNameWithMarker;
-    } else {
-        for (let i = 0; i < multiStaticMap.grid.length; i++) {
-            let firstMapUrl = '';
-            const grid = multiStaticMap.grid[i];
-            const images: Array<{ direction: CombineDirection, path: string }> = [];
-            for (let j = 0; j < grid.maps.length; j++) {
-                const map = grid.maps[i];
-                const staticMap = Object.assign(new StaticMap(), map.map);
-                const url = await generateStaticMap(staticMap);
-                if (map.direction === CombineDirection.First) {
-                    firstMapUrl = url;
-                } else {
-                    images.push({ direction: map.direction, path: url });
-                }
-            }
-            
-            grids.push({ firstPath: firstMapUrl, direction: grid.direction, images: images });
-        }
-        await utils.combineImagesGrid(grids, fileNameWithMarker);
-        console.log('Serving MutliStatic:', multiStaticMap);
-        return fileNameWithMarker;
-    }
-};
-
-
-// TODO: Make generics method
-const parseMarkers = (markersQuery: string): Marker[] => {
-    const list: Marker[] = [];
-    const markersJson = (markersQuery || '')?.replace(/%22/g, '"');
-    if (markersJson) {
-        const markers = JSON.parse(markersJson);
-        if (markers.length > 0) {
-            markers.forEach((marker: Marker) => {
-                //console.log('Marker:', marker);
-                list.push(Object.assign(new Marker(), marker));
-            });
-        }
-    }
-    return list;
-};
-
-const parsePolygons = (polygonsQuery: string): Polygon[] => {
-    const list: Polygon[] = [];
-    const polygonsJson = (polygonsQuery || '')?.replace(/%22/g, '"');
-    if (polygonsJson) {
-        const polygons = JSON.parse(polygonsJson);
-        if (polygons.length > 0) {
-            polygons.forEach((polygon: Polygon) => {
-                //console.log('Polygon:', polygon);
-                list.push(Object.assign(new Polygon(), polygon));
-            });
-        }
-    }
-    return list;
-};
-
-
 // Utilities
 const createDirectories = () => {
-    if (!fs.existsSync(CacheDir)) {
-        fs.mkdir(CacheDir, (err) => {
+    if (!fs.existsSync(globals.CacheDir)) {
+        fs.mkdir(globals.CacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', CacheDir);
+                console.error('[ERROR] Failed to create directory:', globals.CacheDir);
             }
         });
     }
-    if (!fs.existsSync(TileCacheDir)) {
-        fs.mkdir(TileCacheDir, (err) => {
+    if (!fs.existsSync(globals.TileCacheDir)) {
+        fs.mkdir(globals.TileCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', TileCacheDir);
+                console.error('[ERROR] Failed to create directory:', globals.TileCacheDir);
             }
         });
     }
-    if (!fs.existsSync(StaticCacheDir)) {
-        fs.mkdir(StaticCacheDir, (err) => {
+    if (!fs.existsSync(globals.StaticCacheDir)) {
+        fs.mkdir(globals.StaticCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', StaticCacheDir);
+                console.error('[ERROR] Failed to create directory:', globals.StaticCacheDir);
             }
         });
     }
-    if (!fs.existsSync(StaticMultiCacheDir)) {
-        fs.mkdir(StaticMultiCacheDir, (err) => {
+    if (!fs.existsSync(globals.StaticMultiCacheDir)) {
+        fs.mkdir(globals.StaticMultiCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', StaticMultiCacheDir);
+                console.error('[ERROR] Failed to create directory:', globals.StaticMultiCacheDir);
             }
         });
     }
-    if (!fs.existsSync(StaticWithMarkersCacheDir)) {
-        fs.mkdir(StaticWithMarkersCacheDir, (err) => {
+    if (!fs.existsSync(globals.StaticWithMarkersCacheDir)) {
+        fs.mkdir(globals.StaticWithMarkersCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', StaticWithMarkersCacheDir);
+                console.error('[ERROR] Failed to create directory:', globals.StaticWithMarkersCacheDir);
             }
         });
     }
-    if (!fs.existsSync(MarkerCacheDir)) {
-        fs.mkdir(MarkerCacheDir, (err) => {
+    if (!fs.existsSync(globals.MarkerCacheDir)) {
+        fs.mkdir(globals.MarkerCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', MarkerCacheDir);
+                console.error('[ERROR] Failed to create directory:', globals.MarkerCacheDir);
             }
         });
     }
@@ -589,23 +399,23 @@ export const startCacheCleaners = (): void => {
     createDirectories();
 
     // Start cache cleaners
-    new CacheCleaner(TileCacheDir,
+    new CacheCleaner(globals.TileCacheDir,
         parseInt(process.env.TILE_CACHE_MAX_AGE_MINUTES || '10080'),
         parseInt(process.env.TILE_CACHE_DELAY_SECONDS || '3600')
     );
-    new CacheCleaner(StaticCacheDir,
+    new CacheCleaner(globals.StaticCacheDir,
         parseInt(process.env.STATIC_CACHE_MAX_AGE_MINUTES || '10080'),
         parseInt(process.env.STATIC_CACHE_DELAY_SECONDS || '3600')
     );
-    new CacheCleaner(StaticMultiCacheDir,
+    new CacheCleaner(globals.StaticMultiCacheDir,
         parseInt(process.env.STATIC_MULTI_CACHE_MAX_AGE_MINUTES || '10080'),
         parseInt(process.env.STATIC_MULTI_CACHE_DELAY_SECONDS || '3600')
     );
-    new CacheCleaner(StaticWithMarkersCacheDir,
+    new CacheCleaner(globals.StaticWithMarkersCacheDir,
         parseInt(process.env.STATIC_MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
         parseInt(process.env.STATIC_MARKER_CACHE_DELAY_SECONDS || '3600')
     );
-    new CacheCleaner(MarkerCacheDir,
+    new CacheCleaner(globals.MarkerCacheDir,
         parseInt(process.env.MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
         parseInt(process.env.MARKER_CACHE_DELAY_SECONDS || '3600')
     );
