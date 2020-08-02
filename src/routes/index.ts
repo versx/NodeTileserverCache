@@ -9,6 +9,7 @@ import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
 import { CacheCleaner } from '../services/cache-cleaner';
 import { HitStats } from '../services/stats';
+import { Template } from '../services/template';
 import * as utils from '../services/utils';
 
 
@@ -186,7 +187,7 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
 //http://127.0.0.1:43200/staticmap/staticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
 export const getStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
     const name = req.params.template;
-    const template = await utils.renderTemplate(name, req.query);
+    const template = await Template.render(name, req.query);
     const tplObj = JSON.parse(template);
     const staticMap = Object.assign(new StaticMap(), tplObj);
     //console.log('Template StaticMap:', staticMap);
@@ -295,7 +296,7 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
 //http://127.0.0.1:43200/multistaticmap/multistaticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
 export const getMultiStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
     const name = req.params.template;
-    const template = await utils.renderTemplate(name, req.query);
+    const template = await Template.render(name, req.query);
     const tplObj = JSON.parse(template);
     const multiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
     //console.log('MultiStaticMap:', multiStaticMap);
