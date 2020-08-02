@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { Request, Response } from 'express';
-import Mustache from 'mustache';
 
 import { CombineDirection } from '../data/combine-direction';
 import { Drawable } from '../models/drawable';
@@ -200,13 +199,7 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
 //http://127.0.0.1:43200/staticmap/staticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
 export const getStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
     const name = req.params.template;
-    const templatePath = path.resolve(TemplatesDir, name);
-    if (!await utils.fileExists(templatePath)) {
-        console.error('[ERROR] StaticMap template', templatePath, 'does not exist!');
-        return;
-    }
-    const templateData = await utils.fileRead(templatePath);
-    const template = Mustache.render(templateData, req.query);
+    const template = await utils.renderTemplate(name, req.query);
     const tplObj = JSON.parse(template);
     const staticMap = Object.assign(new StaticMap(), tplObj);
     //console.log('Template StaticMap:', staticMap);
@@ -315,13 +308,7 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
 //http://127.0.0.1:43200/multistaticmap/multistaticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
 export const getMultiStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
     const name = req.params.template;
-    const templatePath = path.resolve(TemplatesDir, name);
-    if (!await utils.fileExists(templatePath)) {
-        console.error('[ERROR] MultiStaticMap template', templatePath, 'does not exist!');
-        return;
-    }
-    const templateData = await utils.fileRead(templatePath);
-    const template = Mustache.render(templateData, req.query);
+    const template = await utils.renderTemplate(name, req.query);
     const tplObj = JSON.parse(template);
     const multiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
     //console.log('MultiStaticMap:', multiStaticMap);
@@ -549,6 +536,7 @@ const parsePolygons = (polygonsQuery: string): Polygon[] => {
     }
     return list;
 };
+
 
 // Utilities
 const createDirectories = () => {

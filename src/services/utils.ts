@@ -1,6 +1,8 @@
 'use strict';
 
+import ejs from 'ejs';
 import * as fs from 'fs';
+import * as path from 'path';
 import request from 'request';
 import SphericalMercator from '@mapbox/sphericalmercator';
 import * as crypto from 'crypto';
@@ -11,6 +13,9 @@ import { Grid } from '../models/grid';
 import { Marker } from '../models/marker';
 import { Polygon } from '../models/polygon';
 import { CombineDirection } from '../data/combine-direction';
+
+const TemplatesDir = path.resolve(__dirname, '../../templates');
+
 
 export const fileExists = async (path: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
@@ -230,4 +235,24 @@ export const getRealOffset = (at: { latitude: number, longitude: number }, relat
         x: realOffsetX + extraX * scale,
         y: realOffsetY + extraY * scale
     };
+};
+
+export const renderTemplate = (name: string, data: ejs.Data): Promise<string> => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const filePath = path.resolve(TemplatesDir, name);
+            if (!await fileExists(filePath)) {
+                console.error('[ERROR] Template', filePath, 'does not exist!');
+                return;
+            }
+            ejs.renderFile(filePath, data, (err, str) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(str);
+            })
+        } catch (e) {
+            return reject(e);
+        }
+    });
 };
