@@ -213,6 +213,37 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
 };
 
 /**
+ * POST /staticmap/:template
+ */
+//http://127.0.0.1:43200/staticmap/staticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
+export const postStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
+    const name = req.params.template;
+    const template = await Template.render(name, req.body);
+    const tplObj = JSON.parse(template);
+    const staticMap = Object.assign(new StaticMap(), tplObj);
+    //console.log('Template StaticMap:', staticMap);
+
+    let fileName: string;
+    try {
+        fileName = await staticMap.generate();
+    } catch (e) {
+        console.error('[ERROR] Failed to generate staticmap from template:', e);
+        return res.send(e)
+            .status(405)
+            .end();
+    }
+
+    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
+    console.log(`Serving Static: ${fileName}`);
+    res.sendFile(fileName, (err: Error) => {
+        if (err) {
+            console.error('[ERROR] Failed to send static file:', err);
+            return;
+        }
+    });
+};
+
+/**
  * GET /staticmap
  */
 export const getStaticMap = async (req: Request, res: Response): Promise<void> => {
