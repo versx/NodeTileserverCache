@@ -17,6 +17,7 @@ app.get('/tile/:style/:z/:x/:y/:scale/:format', async (req, res) => await routes
 app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', async (req, res) => await routes.getStatic(req, res));
 
 app.get('/staticmap/:template', routes.getStaticMapTemplate);
+app.post('/staticmap/:template', routes.postStaticMapTemplate);
 app.get('/staticmap', routes.getStaticMap);
 app.post('/staticmap', routes.postStaticMap);
 
