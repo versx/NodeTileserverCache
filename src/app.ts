@@ -5,8 +5,6 @@ const app = express();
 
 import * as routes from './routes/index';
 
-import { Template } from './services/template';
-
 // Body parser middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
