@@ -10,22 +10,24 @@
         <% if (stops != null) { %>
             <% stops.forEach(function(stop) { %>
             {
-                "url": "<%= stop.marker %>",
+                "url": "https://raw.githubusercontent.com/whitewillem/PMSF/develop/static/forts/Pstop.png",
                 "latitude": <%= stop.lat %>,
                 "longitude": <%= stop.lon %>,
-                "width": 50,
-                "height": 50
+                "width": 20,
+                "height": 20,
+                "y_offset": -8
             },
             <% }); %>
         <% } %>
         <% if (gyms != null) { %>
             <% gyms.forEach(function(gym) { %>
             {
-                "url": "<%= gym.marker %>",
+                "url": "https://raw.githubusercontent.com/whitewillem/PMSF/develop/static/forts/shield/<%= gym.team %>",
                 "latitude": <%= gym.lat %>,
                 "longitude": <%= gym.lon %>,
-                "width": 50,
-                "height": 50
+                "width": 20,
+                "height": 20,
+                "y_offset": -8
             },
             <% }); %>
         <% } %>
@@ -33,8 +35,8 @@
             "url": "http://rdmurl/static/img/pokemon/<%= id %><% if (form) { %>-<%= form %><% } %>.png",
             "latitude": <%= lat %>,
             "longitude": <%= lon %>,
-            "width": 50,
-            "height": 50
+            "width": 45,
+            "height": 45
         }
     ]
 }
