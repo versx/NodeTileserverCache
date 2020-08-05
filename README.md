@@ -12,7 +12,7 @@
 - Rename downloaded file to end in `.mbtiles` extension if the name is incorrect.  
 - Change one folder back into the root NodeTileserverCache project folder where the docker-compose.yml file is located: `cd ..`  
 - Copy example.env to .env `cp src/example.env src/.env`
-- Fill out `src/.env` environment config (defaults are fine, except for `TILE_SERVER_URL`)
+- Fill out `src/.env` environment config (defaults are fine)
 - Start and attach to logs: `docker-compose up -d && docker-compose logs -f`  
 
 **Manually**
@@ -27,7 +27,7 @@
 - Install dependencies, run `npm install`
 - Install Typescript, run `sudo npm install -g typescript`
 - Copy example.env to .env `cp src/example.env src/.env`
-- Fill out `src/.env` environment config (defaults are fine, except for `TILE_SERVER_URL`)
+- Fill out `src/.env` environment config (defaults are fine)
 - Start `npm run start`
 
 ## Formats
