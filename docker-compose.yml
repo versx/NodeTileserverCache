@@ -30,4 +30,4 @@ services:
       - .:/app
     ports:
       - 43200:43200
-    #network_mode: host
+    network_mode: host
