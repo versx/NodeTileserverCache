@@ -7,8 +7,8 @@
     "height": 250,
     "scale": 1,
     "markers": [
-        <% if (stops != null) { %>
-            <% stops.forEach(function(stop) { %>
+        <% if (stops != null) {
+            stops.forEach(function(stop) { %>
             {
                 "url": "<%= stop.marker %>",
                 "latitude": <%= stop.lat %>,
@@ -16,10 +16,10 @@
                 "width": 50,
                 "height": 50
             },
-            <% }); %>
-        <% } %>
-        <% if (gyms != null) { %>
-            <% gyms.forEach(function(gym) { %>
+            <% });
+        } %>
+        <% if (gyms != null) {
+            gyms.forEach(function(gym) { %>
             {
                 "url": "<%= gym.marker %>",
                 "latitude": <%= gym.lat %>,
@@ -27,8 +27,8 @@
                 "width": 50,
                 "height": 50
             },
-            <% }); %>
-        <% } %>
+            <% });
+        } %>
         {
             "url": "http://rdmurl/static/img/pokemon/<%= id %><% if (form) { %>-<%= form %><% } %>.png",
             "latitude": <%= lat %>,
