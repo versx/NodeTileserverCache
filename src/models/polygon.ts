@@ -17,4 +17,19 @@ export class Polygon implements Drawable {
         this.path = path;
         this.hashString = 'P' + utils.getHashCode(this);
     }
+
+    public static parse(polygonsQuery: string): Polygon[] {
+        const list: Polygon[] = [];
+        const polygonsJson = (polygonsQuery || '')?.replace(/%22/g, '"');
+        if (polygonsJson) {
+            const polygons = JSON.parse(polygonsJson);
+            if (polygons.length > 0) {
+                polygons.forEach((polygon: Polygon) => {
+                    //console.log('Polygon:', polygon);
+                    list.push(Object.assign(new Polygon(), polygon));
+                });
+            }
+        }
+        return list;
+    }
 }

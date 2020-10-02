@@ -1,5 +1,6 @@
 'use strict';
 
+
 import * as fs from 'fs';
 import request from 'request';
 import SphericalMercator from '@mapbox/sphericalmercator';
@@ -11,6 +12,7 @@ import { Grid } from '../models/grid';
 import { Marker } from '../models/marker';
 import { Polygon } from '../models/polygon';
 import { CombineDirection } from '../data/combine-direction';
+
 
 export const fileExists = async (path: string): Promise<boolean> => {
     return new Promise((resolve, reject) => {
