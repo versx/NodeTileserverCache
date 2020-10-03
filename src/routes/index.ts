@@ -108,7 +108,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     const fileName = path.resolve(globals.TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
     if (scale >= 1 && globals.ValidFormats.includes(format)) {
         if (await utils.fileExists(fileName)) {
-            utils.touch(fileName);
+            await utils.touch(fileName);
             HitStats.tileHit(style, false);
         } else {
             const scaleString = scale === 1 ? '' : `@${scale}x`;

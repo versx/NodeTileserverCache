@@ -78,12 +78,13 @@ export const getHashCode = (obj: unknown): string => {
     return hash;
 };
 
-export const touch = (fileName: string): void => {
+export const touch = async (fileName: string): Promise<void> => {
     try {
         const time = new Date();
-        fs.utimesSync(fileName, time, time);
+        await fs.promises.utimes(fileName, time, time);
     } catch (err) {
-        fs.closeSync(fs.openSync(fileName, 'w'));
+        const handle = await fs.promises.open(fileName, 'w');
+        fs.close(handle.fd, () => {});
     }
 };
 

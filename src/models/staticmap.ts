@@ -45,7 +45,7 @@ export class StaticMap {
             // Valid format, check if static file already exists
             if (await utils.fileExists(fileName)) {
                 // Static file exists, update last modified time
-                utils.touch(fileName);
+                await utils.touch(fileName);
                 HitStats.staticHit(this.style, false);
             } else {
                 // Static file does not exist, download from tileserver
@@ -71,7 +71,7 @@ export class StaticMap {
                 const fileNameWithMarker = path.resolve(globals.StaticWithMarkersCacheDir, `${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
                 if (await utils.fileExists(fileNameWithMarker)) {
                     // Static with marker file exists, touch for last modified timestamp.
-                    utils.touch(fileName);
+                    await utils.touch(fileName);
                     HitStats.staticMarkerHit(this.style, false);
                 } else {
                     let fileNameWithMarkerFull = fileName;
@@ -86,7 +86,7 @@ export class StaticMap {
                             const markerFileName = path.resolve(globals.MarkerCacheDir, markerUrlEncoded);
                             if (await utils.fileExists(markerFileName)) {
                                 // Marker already downloaded, touch for last modified timestamp.
-                                utils.touch(fileName);
+                                await utils.touch(fileName);
                                 HitStats.markerHit(this.style, false);
                             } else {
                                 // Download marker to cache for future use.
