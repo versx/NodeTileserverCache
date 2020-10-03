@@ -108,3 +108,9 @@ Cache
 
 # No dotenv files
 .env
+
+templates/*
+!templates/multistaticmap.example.json
+!templates/staticmap.example.json
+!templates/staticmap-complex.example.json
+!templates/staticmap-complex2.example.json
