@@ -29,13 +29,7 @@ export class Marker implements Drawable {
         const list: Marker[] = [];
         const markersJson = (markersQuery || '')?.replace(/%22/g, '"');
         if (markersJson) {
-            const markers = JSON.parse(markersJson);
-            if (markers.length > 0) {
-                markers.forEach((marker: Marker) => {
-                    //console.log('Marker:', marker);
-                    list.push(Object.assign(new Marker(), marker));
-                });
-            }
+            return JSON.parse(markersJson);
         }
         return list;
     }

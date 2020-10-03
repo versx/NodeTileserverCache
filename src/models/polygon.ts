@@ -23,12 +23,7 @@ export class Polygon implements Drawable {
         const polygonsJson = (polygonsQuery || '')?.replace(/%22/g, '"');
         if (polygonsJson) {
             const polygons = JSON.parse(polygonsJson);
-            if (polygons.length > 0) {
-                polygons.forEach((polygon: Polygon) => {
-                    //console.log('Polygon:', polygon);
-                    list.push(Object.assign(new Polygon(), polygon));
-                });
-            }
+            return polygons;
         }
         return list;
     }

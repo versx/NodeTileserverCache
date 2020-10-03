@@ -12,7 +12,6 @@ import { HitStats } from '../services/stats';
 import { Template } from '../services/template';
 import * as utils from '../services/utils';
 
-
 /**
  * GET /
  */

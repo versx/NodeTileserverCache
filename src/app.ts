@@ -18,6 +18,7 @@ app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', async (r
 
 app.get('/staticmap/:template', routes.getStaticMapTemplate);
 app.post('/staticmap/:template', routes.postStaticMapTemplate);
+
 app.get('/staticmap', routes.getStaticMap);
 app.post('/staticmap', routes.postStaticMap);
 

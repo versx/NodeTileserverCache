@@ -8,7 +8,7 @@
     "scale": 1,
     "markers": [
         {
-            "url": "http://rdmurl/static/img/pokemon/<%= id %><% if (form) { %>-<%= form %><% } %>.png",
+            "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-<%= form %><% } %>.png",
             "latitude": <%= lat %>,
             "longitude": <%= lon %>,
             "width": 50,
