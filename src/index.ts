@@ -7,9 +7,9 @@ import cluster from 'cluster';
 
 import * as globals from './data/globals';
 import { CacheCleaner } from './services/cache-cleaner';
+import './services/logger';
 
 // TODO: Test tiles
-// TODO: Fix combineImagesGrid
 // TODO: Cleanup code, separate into classes
 
 const createDirectories = () => {
@@ -58,7 +58,7 @@ const createDirectories = () => {
 };
 
 if (cluster.isMaster) {
-    console.log(`[Cluster] Master ${process.pid} is running`);
+    console.info(`[Cluster] Master ${process.pid} is running`);
 
     // Fork workers
     const clusters = parseInt(process.env.CLUSTERS || '2');
@@ -70,15 +70,15 @@ if (cluster.isMaster) {
     cluster.on('disconnect', function (worker) {
         console.error(`[Cluster] Worker disconnected with id ${worker.id}`);
         const newWorker = cluster.fork();
-        console.log('[Cluster] New worker started with process id %s', newWorker.process.pid);
+        console.info('[Cluster] New worker started with process id %s', newWorker.process.pid);
     });
 
     cluster.on('online', function (worker) {
-        console.log(`[Cluster] New worker online with id ${worker.id}`);
+        console.info(`[Cluster] New worker online with id ${worker.id}`);
     });
 
     cluster.on('exit', (worker, code, signal) => {
-        console.log(`[Cluster] Worker ${worker.process.pid} died with error code ${code}`);
+        console.warn(`[Cluster] Worker ${worker.process.pid} died with error code ${code}`);
     });
 
     // Create cache directories
@@ -109,5 +109,5 @@ if (cluster.isMaster) {
     // Start listener
     const host: string = process.env.INTERFACE || '0.0.0.0';
     const port: number = parseInt(process.env.PORT || '43200');
-    app.listen(port, host, () => console.log(`Listening on port ${port}...`));
+    app.listen(port, host, () => console.info(`Listening on port ${port}...`));
 }

@@ -190,7 +190,7 @@ export const getStyles = async (req: Request, res: Response): Promise<void> => {
  * GET /tile
  */
 export const getTile = async (req: Request, res: Response): Promise<void> => {
-    //console.log('Tile:', req.params);
+    //console.debug('Tile:', req.params);
     const style = req.params.style;
     const z = parseInt(req.params.z);
     const x = parseFloat(req.params.x);
@@ -214,7 +214,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
+    console.info(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
     res.sendFile(fileName, (error: Error) => {
         if (error) {
             console.error('[ERROR] Failed to serve tile:', error);
@@ -222,7 +222,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
         }
     });
 
-    console.log('[STATS] Tile:', HitStats.tileHitRatio);
+    console.info('[STATS] Tile:', HitStats.tileHitRatio);
 };
 
 //http://10.0.0.2:43200/static/klokantech-basic/34.01/-117.01/15/300/175/1/png
@@ -234,7 +234,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
  * GET /static
  */
 export const getStatic = async (req: Request, res: Response): Promise<void> => {
-    //console.log('Static:', req.params);
+    //console.debug('Static:', req.params);
     const style = req.params.style;
     const lat = parseFloat(req.params.lat);
     const lon = parseFloat(req.params.lon);
@@ -248,7 +248,7 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
     const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
     const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.log('Static map:', staticMap);
+    //console.debug('Static map:', staticMap);
 
     let fileName: string;
     try {
@@ -261,7 +261,7 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
+    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
             console.error('[ERROR] Failed to send static file:', err);
@@ -269,7 +269,7 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
         }
     });
 
-    console.log('[STATS] Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
+    console.info('[STATS] Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
 };
 
 /**
@@ -281,7 +281,7 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
     const template = await Template.render(name, req.query);
     const tplObj = JSON.parse(template);
     const staticMap = Object.assign(new StaticMap(), tplObj);
-    //console.log('Template StaticMap:', staticMap);
+    //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
     try {
@@ -294,7 +294,7 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${fileName}`);
+    console.info(`Serving Static: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
             console.error('[ERROR] Failed to send static file:', err);
@@ -312,7 +312,7 @@ export const postStaticMapTemplate = async (req: Request, res: Response): Promis
     const template = await Template.render(name, req.body);
     const tplObj = JSON.parse(template);
     const staticMap = Object.assign(new StaticMap(), tplObj);
-    //console.log('Template StaticMap:', staticMap);
+    //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
     try {
@@ -325,7 +325,7 @@ export const postStaticMapTemplate = async (req: Request, res: Response): Promis
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${fileName}`);
+    console.info(`Serving Static: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
             console.error('[ERROR] Failed to send static file:', err);
@@ -351,7 +351,7 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
     const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
     const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.log('Static map:', staticMap);
+    //console.debug('Static map:', staticMap);
 
     let fileName: string;
     try {
@@ -364,7 +364,7 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
+    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
             console.error('[ERROR] Failed to send static file:', err);
@@ -390,7 +390,7 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
     const polygons: Polygon[] = Polygon.parse(req.body.polygons);
     const markers: Marker[] = Marker.parse(req.body.markers);
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.log('Static map:', staticMap);
+    //console.debug('Static map:', staticMap);
 
     let fileName: string;
     try {
@@ -403,7 +403,7 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
+    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
             console.error('[ERROR] Failed to send static file:', err);
@@ -421,7 +421,7 @@ export const getMultiStaticMapTemplate = async (req: Request, res: Response): Pr
     const template = await Template.render(name, req.query);
     const tplObj = JSON.parse(template);
     const multiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
-    //console.log('MultiStaticMap:', multiStaticMap);
+    //console.debug('MultiStaticMap:', multiStaticMap);
 
     let fileName: string;
     try {
@@ -434,7 +434,7 @@ export const getMultiStaticMapTemplate = async (req: Request, res: Response): Pr
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving MultiStatic: ${fileName}`);
+    console.info(`Serving MultiStatic: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
             console.error('[ERROR] Failed to send static file:', err);
@@ -451,7 +451,7 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
     try {
         const grid = req.body.grid;
         const multiStaticMap = new MultiStaticMap(grid);
-        console.log('Multi Static map:', multiStaticMap);
+        console.debug('Multi Static map:', multiStaticMap);
         fileName = await multiStaticMap.generate();
     } catch (e) {
         console.error('[ERROR] Failed to generate multi staticmap:', e);
@@ -461,7 +461,7 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving MultiStatic: ${fileName}`);
+    console.info(`Serving MultiStatic: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
             console.error('[ERROR] Failed to send static file:', err);

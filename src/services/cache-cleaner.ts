@@ -15,13 +15,13 @@ export class CacheCleaner {
         this.maxAgeMinutes = maxAgeMinutes;
         this.clearDelaySeconds = clearDelaySeconds || 60;
         this.timer = setInterval(() => this.checkFiles(), this.clearDelaySeconds * 1000);
-        console.log('Started cache directory cleaner for', this.folder);
+        console.info('Started cache directory cleaner for', this.folder);
     }
 
     private checkFiles() {
         fs.readdir(this.folder, (err, files) => {
             if (err) {
-                console.error('[ERROR] Failed to read cache directory.', 'Error:', err);
+                console.error('Failed to read cache directory.', 'Error:', err);
                 return;
             }
             if (files && files.length > 0) {
@@ -30,19 +30,19 @@ export class CacheCleaner {
                     const lastModified = await utils.fileLastModifiedTime(filePath);
                     const now = new Date();
                     const delta = (now.getTime() - lastModified.getTime()) / 1000;
-                    console.log('Time Delta:', delta);
+                    console.debug('Time Delta:', delta);
                     if (delta >= this.maxAgeMinutes * 60) {
-                        console.log(`Removing file ${filePath} (Too old)`);
+                        console.info(`Removing file ${filePath} (Too old)`);
                         try {
                             fs.unlink(filePath, (err) => {
                                 if (err) {
-                                    console.error('[ERROR] Failed to delete', filePath, 'Error:', err);
+                                    console.error('Failed to delete', filePath, 'Error:', err);
                                     return;
                                 }
-                                console.log('File', filePath, 'deleted...');
+                                console.info('File', filePath, 'deleted...');
                             });
                         } catch (e) {
-                            console.error('[ERROR] Failed to delete', filePath, 'Error:', e);
+                            console.error('Failed to delete', filePath, 'Error:', e);
                         }
                     }
                 });
@@ -51,6 +51,7 @@ export class CacheCleaner {
     }
 
     public stop() {
+        console.info('Stopping cache directory cleaner for', this.folder);
         clearInterval(this.timer);
     }
 }

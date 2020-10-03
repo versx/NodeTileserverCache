@@ -49,7 +49,7 @@ export class MultiStaticMap implements Drawable {
         const grids = Array<Grid>();
         const fileNameWithMarker = `${globals.StaticMultiCacheDir}/${this.hashString}.png`;
         if (await utils.fileExists(fileNameWithMarker)) {
-            console.log('Serving MutliStatic:', this);
+            //console.debug('Serving MutliStatic:', this);
             return fileNameWithMarker;
         }
         
@@ -71,7 +71,7 @@ export class MultiStaticMap implements Drawable {
             grids.push({ firstPath: firstMapUrl, direction: grid.direction, images: images });
         }
         await utils.combineImagesGrid(grids, fileNameWithMarker);
-        console.log('Serving MutliStatic:', this);
+        //console.debug('Serving MutliStatic:', this);
         return fileNameWithMarker;
     }
 }

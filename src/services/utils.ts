@@ -46,7 +46,7 @@ export const getData = async (url: string): Promise<string> => {
 };
 
 export const downloadFile = async (from: string, to: string): Promise<void> => {
-    console.log(`DownloadFile [From: ${from} To: ${to}]`);
+    console.debug(`DownloadFile [From: ${from} To: ${to}]`);
     const writer = fs.createWriteStream(to);
     const response = await axios.get(from, {
         responseType: 'stream'
@@ -85,7 +85,7 @@ export const touch = async (fileName: string): Promise<void> => {
 };
 
 export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: string): Promise<void> => {
-    console.log(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
+    console.debug(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
     const args = Array<string>();
     for (let i = 0; i < grids.length; i++) {
         const grid = grids[i];
@@ -109,17 +109,17 @@ export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: str
     }
     args.push(destinationPath);
 
-    //console.log('Grid Args:', args);
+    //console.debug('Grid Args:', args);
     try {
         const shell = await exec(ImageMagickPath, args);
-        console.log('Magick CombineImagesGrid:', shell);
+        console.debug('Magick CombineImagesGrid:', shell);
     } catch (e) {
         console.error('Failed to run magick:', e);
     }
 };
 
 export const combineImages = async (staticPath: string, markerPath: string, destinationPath: string, marker: Marker, scale: number, centerLat: number, centerLon: number, zoom: number): Promise<void> => {
-    //console.log(`Combine Images [StaticPath: ${staticPath}, MarkerPath: ${markerPath}, DestinationPath: ${destinationPath}, Marker: ${marker}, Scale: ${scale}, CenterLat: ${centerLat}, CenterLon: ${centerLon}, Zoom: ${zoom}]`);
+    //console.debug(`Combine Images [StaticPath: ${staticPath}, MarkerPath: ${markerPath}, DestinationPath: ${destinationPath}, Marker: ${marker}, Scale: ${scale}, CenterLat: ${centerLat}, CenterLon: ${centerLon}, Zoom: ${zoom}]`);
     const realOffset = getRealOffset(
         { latitude: marker.latitude, longitude: marker.longitude },
         { latitude: centerLat, longitude: centerLon },
@@ -138,7 +138,7 @@ export const combineImages = async (staticPath: string, markerPath: string, dest
         '-composite',
         destinationPath
     ]);
-    console.log('Magick CombineImages:', shell);
+    console.debug('Magick CombineImages:', shell);
 };
 
 export const drawPolygon = async (staticPath: string, destinationPath: string, polygon: Polygon, scale: number, centerLat: number, centerLon: number, zoom: number, width: number, height: number): Promise<void> => {
@@ -175,7 +175,7 @@ export const drawPolygon = async (staticPath: string, destinationPath: string, p
         '-draw', `polygon ${polygonPath}`,
         destinationPath 
     ]);
-    console.log('Magick DrawPolygon:', shell);
+    console.debug('Magick DrawPolygon:', shell);
 };
 
 export const getRealOffset = (at: { latitude: number, longitude: number }, relativeTo: { latitude: number, longitude: number }, zoom: number, scale: number, extraX: number, extraY: number): { x: number, y: number} => {
