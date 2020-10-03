@@ -18,15 +18,11 @@ const ImageMagickPath = os.platform() === 'win32'
     : '/usr/local/bin/convert';
 
 export const fileExists = async (path: string): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        try {
-            fs.exists(path, (exists: boolean) => {
-                resolve(exists);
-            });
-        } catch (e) {
-            return reject(e);
-        }
-    });
+    return await fs.promises.access(path, fs.constants.F_OK)
+        .then(() => true)
+        .catch(err => {
+            return false;
+        });
 };
 
 export const fileLastModifiedTime = async (path: string): Promise<Date> => {
