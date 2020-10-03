@@ -1,4 +1,5 @@
-import fs from 'fs';
+'use strict';
+
 import path from 'path';
 import { Request, Response } from 'express';
 
@@ -7,7 +8,6 @@ import { Marker } from '../models/marker';
 import { MultiStaticMap } from '../models/multi-staticmap';
 import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
-import { CacheCleaner } from '../services/cache-cleaner';
 import { HitStats } from '../services/stats';
 import { Template } from '../services/template';
 import * as utils from '../services/utils';
@@ -376,78 +376,4 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
             return;
         }
     });
-};
-
-
-// Utilities
-const createDirectories = () => {
-    if (!fs.existsSync(globals.CacheDir)) {
-        fs.mkdir(globals.CacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.CacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.TileCacheDir)) {
-        fs.mkdir(globals.TileCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.TileCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticCacheDir)) {
-        fs.mkdir(globals.StaticCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticMultiCacheDir)) {
-        fs.mkdir(globals.StaticMultiCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticMultiCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticWithMarkersCacheDir)) {
-        fs.mkdir(globals.StaticWithMarkersCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticWithMarkersCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.MarkerCacheDir)) {
-        fs.mkdir(globals.MarkerCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.MarkerCacheDir);
-            }
-        });
-    }
-};
-
-export const startCacheCleaners = (): void => {
-    // Create cache directories
-    createDirectories();
-
-    // Start cache cleaners
-    new CacheCleaner(globals.TileCacheDir,
-        parseInt(process.env.TILE_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.TILE_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.StaticCacheDir,
-        parseInt(process.env.STATIC_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.STATIC_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.StaticMultiCacheDir,
-        parseInt(process.env.STATIC_MULTI_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.STATIC_MULTI_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.StaticWithMarkersCacheDir,
-        parseInt(process.env.STATIC_MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.STATIC_MARKER_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.MarkerCacheDir,
-        parseInt(process.env.MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.MARKER_CACHE_DELAY_SECONDS || '3600')
-    );
 };

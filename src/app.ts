@@ -25,7 +25,4 @@ app.post('/staticmap', routes.postStaticMap);
 app.get('/multistaticmap/:template', routes.getMultiStaticMapTemplate);
 app.post('/multistaticmap', routes.postMultiStaticMap);
 
-// Start cache cleaners
-routes.startCacheCleaners();
-
 export default app;

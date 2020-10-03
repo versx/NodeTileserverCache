@@ -22,8 +22,7 @@ export class Polygon implements Drawable {
         const list: Polygon[] = [];
         const polygonsJson = (polygonsQuery || '')?.replace(/%22/g, '"');
         if (polygonsJson) {
-            const polygons = JSON.parse(polygonsJson);
-            return polygons;
+            return JSON.parse(polygonsJson);
         }
         return list;
     }

@@ -45,11 +45,7 @@ export const fileLastModifiedTime = async (path: string): Promise<Date> => {
 };
 
 export const getData = async (url: string): Promise<string> => {
-    const response = await axios({
-        url,
-        method: 'GET',
-        responseType: 'json'
-    });
+    const response = await axios.get(url);
     return response.data;
 };
 

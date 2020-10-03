@@ -66,7 +66,7 @@ export class StaticMap {
             //console.log('Drawable Objects:', drawables);
             if (drawables.length > 0) {
                 // Hash all of the hashStrings for smaller filenames
-                const hashes = drawables.map(drawable => drawable.hashString).join(',');
+                const hashes = utils.getHashCode(drawables.map(drawable => drawable.hashString).join(','));
                 //console.log('hashes:', hashes);
                 const fileNameWithMarker = path.resolve(globals.StaticWithMarkersCacheDir, `${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
                 if (await utils.fileExists(fileNameWithMarker)) {
