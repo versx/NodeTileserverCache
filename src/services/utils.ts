@@ -89,7 +89,7 @@ export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: str
     const args = Array<string>();
     for (let i = 0; i < grids.length; i++) {
         const grid = grids[i];
-        args.push('\\(');
+        args.push('(');
         args.push(grid.firstPath);
         for (let j = 0; j < grid.images.length; j++) {
             const image = grid.images[j];
@@ -100,7 +100,7 @@ export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: str
                 args.push('+append');
             }
         }
-        args.push('\\)');
+        args.push(')');
         if (grid.direction === CombineDirection.Bottom) {
             args.push('-append');
         } else {

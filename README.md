@@ -70,7 +70,7 @@ StaticMap route accepts a StaticMap Object JSON Object as POST body:
 Example:
 ```
 {
-  "style": string (check avilable styles at /styles),
+  "style": string (check available styles at /styles),
   "latitude": double,
   "longitude": double,
   "zoom": int,
