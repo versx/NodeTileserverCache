@@ -2,12 +2,16 @@
 
 import express from 'express';
 const app = express();
+import path from 'path';
 
 import * as routes from './routes/index';
 
 // Body parser middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+app.set('view engine', 'ejs');
+app.set('views', path.resolve(__dirname, 'views'));
 
 // Routing endpoints
 app.get('/', routes.getRoot);

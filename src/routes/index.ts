@@ -16,163 +16,77 @@ import * as utils from '../services/utils';
  * GET /
  */
 export const getRoot = (req: Request, res: Response): void => {
-    let html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <title>NodeTileserverCache</title>
-
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" crossorigin="anonymous" />
-        <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    </head>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="/">NodeTileserverCache</a>        
-        </div>
-    </nav>
-    <br><br><br>
-    <body class="w-75" style="float: none; margin: 0 auto;">
-        <h4 class="text-center"><b>Tile Cache Hit-Rate</b></h4>
-        <div class="card-body">
-            <table id="table" class="table table-striped table-bordered table-hover dt-responsive nowrap" style="position: center; width:100%">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Style</th>
-                        <th>Hits</th>
-                        <th>Total</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        const tileHitKeys = Object.keys(HitStats.tileHitRatio);
-        if (tileHitKeys) {
-            tileHitKeys.forEach((key: string) => {
-                const style = HitStats.tileHitRatio[key];
-                const hit = style.hit;
-                const total = style.miss + style.hit;
-                const percentage = Math.round(hit / total * 100);
-                //html += `<div class="list-group-item">${key}: ${hit}/${total} (${percentage}%)</div>`;
-                html += `
-                <tr>
-                    <td>${key}</td>
-                    <td>${hit}</td>
-                    <td>${total}</td>
-                    <td>${percentage}%</td>
-                </tr>
-                `;
+    const tileHitKeys = Object.keys(HitStats.tileHitRatio);
+    const tileHits: HitStatistics[] = [];
+    if (tileHitKeys) {
+        tileHitKeys.forEach((key: string) => {
+            const style = HitStats.tileHitRatio[key];
+            const hit = style.hit;
+            const total = style.miss + style.hit;
+            const percentage = Math.round(hit / total * 100);
+            tileHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
             });
-        }
-        html += `
-                </tbody>
-            </table>
-        </div>
-        <h4 class="text-center"><b>Static Map Cache Hit-Rate</b></h4>
-        <div class="card-body">
-            <table id="table" class="table table-striped table-bordered table-hover dt-responsive nowrap" style="position: center; width:100%">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Style</th>
-                        <th>Hits</th>
-                        <th>Total</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        const staticHitKeys = Object.keys(HitStats.staticHitRatio);
-        if (staticHitKeys) {
-            staticHitKeys.forEach((key: string) => {
-                const style = HitStats.staticHitRatio[key];
-                const hit = style.hit;
-                const total = style.miss + style.hit;
-                const percentage = Math.round(hit / total * 100);
-                html += `
-                <tr>
-                    <td>${key}</td>
-                    <td>${hit}</td>
-                    <td>${total}</td>
-                    <td>${percentage}%</td>
-                </tr>
-                `;
+        });
+    }
+    const staticHitKeys = Object.keys(HitStats.staticHitRatio);
+    const staticHits: HitStatistics[] = [];
+    if (staticHitKeys) {
+        staticHitKeys.forEach((key: string) => {
+            const style = HitStats.staticHitRatio[key];
+            const hit = style.hit;
+            const total = style.miss + style.hit;
+            const percentage = Math.round(hit / total * 100);
+            staticHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
             });
-        }
-        html += `
-                </tbody>
-            </table>
-        </div>
-        <h4 class="text-center"><b>Static Map with Marker Cache Hit-Rate</b></h4>
-        <div class="card-body">
-            <table id="table" class="table table-striped table-bordered table-hover dt-responsive nowrap" style="position: center; width:100%">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Style</th>
-                        <th>Hits</th>
-                        <th>Total</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        const staticMarkerHitKeys = Object.keys(HitStats.staticMarkerHitRatio);
-        if (staticMarkerHitKeys) {
-            staticMarkerHitKeys.forEach((key: string) => {
-                const style = HitStats.staticMarkerHitRatio[key];
-                const hit = style.hit;
-                const total = style.miss + style.hit;
-                const percentage = Math.round(hit / total * 100);
-                html += `
-                <tr>
-                    <td>${key}</td>
-                    <td>${hit}</td>
-                    <td>${total}</td>
-                    <td>${percentage}%</td>
-                </tr>
-                `;
+        });
+    }
+    const staticMarkerHitKeys = Object.keys(HitStats.staticMarkerHitRatio);
+    const staticMarkerHits: HitStatistics[] = [];
+    if (staticMarkerHitKeys) {
+        staticMarkerHitKeys.forEach((key: string) => {
+            const style = HitStats.staticMarkerHitRatio[key];
+            const hit = style.hit;
+            const total = style.miss + style.hit;
+            const percentage = Math.round(hit / total * 100);
+            staticMarkerHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
             });
-        }
-        html += `
-                </tbody>
-            </table>
-        </div>
-        <h4 class="text-center"><b>Marker Cache Hit-Rate</b></h4>
-        <div class="card-body">
-            <table id="table" class="table table-striped table-bordered table-hover dt-responsive nowrap" style="position: center; width:100%">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Style</th>
-                        <th>Hits</th>
-                        <th>Total</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        const markerHitKeys = Object.keys(HitStats.markerHitRatio);
-        if (markerHitKeys) {
-            markerHitKeys.forEach((key: string) => {
-                const style = HitStats.markerHitRatio[key];
-                const hit = style.hit;
-                const total = style.miss + style.hit;
-                const percentage = Math.round(hit / total * 100);
-                html += `
-                <tr>
-                    <td>${key}</td>
-                    <td>${hit}</td>
-                    <td>${total}</td>
-                    <td>${percentage}%</td>
-                </tr>
-                `;
+        });
+    }
+    const markerHitKeys = Object.keys(HitStats.markerHitRatio);
+    const markerHits: HitStatistics[] = [];
+    if (markerHitKeys) {
+        markerHitKeys.forEach((key: string) => {
+            const style = HitStats.markerHitRatio[key];
+            const hit = style.hit;
+            const total = style.miss + style.hit;
+            const percentage = Math.round(hit / total * 100);
+            markerHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
             });
-        }
-        html += `
-                </tbody>
-            </table>
-        </div>
-    </body>
-    `;
-    res.send(html);
+        });
+    }
+    res.render('stats', {
+        tileHits,
+        staticHits,
+        staticMarkerHits,
+        markerHits,
+    });
+    //res.send(html);
 };
 
 /**
@@ -469,3 +383,10 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
         }
     });
 };
+
+interface HitStatistics {
+    style: string;
+    hit: number;
+    total: number;
+    percentage: number;
+}

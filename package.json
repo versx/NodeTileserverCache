@@ -4,7 +4,8 @@
   "description": "",
   "main": "dist/src/index.js",
   "scripts": {
-    "start": "tsc && node ./dist/index.js",
+    "start": "tsc && npm run copyviews && node ./dist/index.js",
+    "copyviews": "cp -R src/views dist/",
     "start:watch": "nodemon",
     "start:production": "cd dist && node -r ts-node/register src/index.js",
     "build": "tsc -p tsconfig.json",
