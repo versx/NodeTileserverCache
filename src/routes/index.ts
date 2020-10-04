@@ -217,12 +217,12 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     console.info(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
     res.sendFile(fileName, (error: Error) => {
         if (error) {
-            console.error('[ERROR] Failed to serve tile:', error);
+            console.error('Failed to serve tile:', error);
             return;
         }
     });
 
-    console.info('[STATS] Tile:', HitStats.tileHitRatio);
+    console.debug('Tile:', HitStats.tileHitRatio);
 };
 
 //http://10.0.0.2:43200/static/klokantech-basic/34.01/-117.01/15/300/175/1/png
@@ -254,7 +254,7 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap:', e);
+        console.error('Failed to generate staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
@@ -264,12 +264,12 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
     console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
 
-    console.info('[STATS] Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
+    console.debug('Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
 };
 
 /**
@@ -287,7 +287,7 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap from template:', e);
+        console.error('Failed to generate staticmap from template:', e);
         return res.send(e)
             .status(405)
             .end();
@@ -297,7 +297,7 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
     console.info(`Serving Static: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -318,7 +318,7 @@ export const postStaticMapTemplate = async (req: Request, res: Response): Promis
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap from template:', e);
+        console.error('Failed to generate staticmap from template:', e);
         return res.send(e)
             .status(405)
             .end();
@@ -328,7 +328,7 @@ export const postStaticMapTemplate = async (req: Request, res: Response): Promis
     console.info(`Serving Static: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -357,7 +357,7 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap:', e);
+        console.error('Failed to generate staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
@@ -367,7 +367,7 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
     console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -396,7 +396,7 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap:', e);
+        console.error('Failed to generate staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
@@ -406,7 +406,7 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
     console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -427,7 +427,7 @@ export const getMultiStaticMapTemplate = async (req: Request, res: Response): Pr
     try {
         fileName = await multiStaticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate multi staticmap:', e);
+        console.error('Failed to generate multi staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
@@ -437,7 +437,7 @@ export const getMultiStaticMapTemplate = async (req: Request, res: Response): Pr
     console.info(`Serving MultiStatic: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -454,7 +454,7 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
         console.debug('Multi Static map:', multiStaticMap);
         fileName = await multiStaticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate multi staticmap:', e);
+        console.error('Failed to generate multi staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
@@ -464,7 +464,7 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
     console.info(`Serving MultiStatic: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });

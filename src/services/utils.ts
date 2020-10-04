@@ -147,7 +147,7 @@ export const drawPolygon = async (staticPath: string, destinationPath: string, p
     for (let i = 0; i < polygons.length; i++) {
         const coord = polygons[i];
         if (coord.length !== 2) {
-            console.error('[ERROR] Polygon coordinates don\'t match up, aborting...');
+            console.error('Polygon coordinates don\'t match up, aborting...');
             return;
         }
         const point = getRealOffset(

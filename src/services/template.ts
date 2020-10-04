@@ -15,7 +15,7 @@ export class Template {
             try {
                 const filePath = path.resolve(globals.TemplatesDir, name);
                 if (!await utils.fileExists(filePath)) {
-                    console.error('[ERROR] Template', filePath, 'does not exist!');
+                    console.error('Template', filePath, 'does not exist!');
                     return;
                 }
                 ejs.renderFile(filePath, data, (err, str) => {

@@ -16,7 +16,7 @@ export const exec = (path: string, args: string[]): unknown => {
             shell.on('close', (code: number) => {
                 //console.debug('Child process exited with code:', code);
                 if (code > 0) {
-                    console.error('[ERROR] Child process exited with non zero exit code:', code);
+                    console.error('Child process exited with non zero exit code:', code);
                 }
                 resolve(code);
             });

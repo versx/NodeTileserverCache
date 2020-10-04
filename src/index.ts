@@ -16,42 +16,42 @@ const createDirectories = () => {
     if (!fs.existsSync(globals.CacheDir)) {
         fs.mkdir(globals.CacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.CacheDir);
+                console.error('Failed to create directory:', globals.CacheDir);
             }
         });
     }
     if (!fs.existsSync(globals.TileCacheDir)) {
         fs.mkdir(globals.TileCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.TileCacheDir);
+                console.error('Failed to create directory:', globals.TileCacheDir);
             }
         });
     }
     if (!fs.existsSync(globals.StaticCacheDir)) {
         fs.mkdir(globals.StaticCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticCacheDir);
+                console.error('Failed to create directory:', globals.StaticCacheDir);
             }
         });
     }
     if (!fs.existsSync(globals.StaticMultiCacheDir)) {
         fs.mkdir(globals.StaticMultiCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticMultiCacheDir);
+                console.error('Failed to create directory:', globals.StaticMultiCacheDir);
             }
         });
     }
     if (!fs.existsSync(globals.StaticWithMarkersCacheDir)) {
         fs.mkdir(globals.StaticWithMarkersCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticWithMarkersCacheDir);
+                console.error('Failed to create directory:', globals.StaticWithMarkersCacheDir);
             }
         });
     }
     if (!fs.existsSync(globals.MarkerCacheDir)) {
         fs.mkdir(globals.MarkerCacheDir, (err) => {
             if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.MarkerCacheDir);
+                console.error('Failed to create directory:', globals.MarkerCacheDir);
             }
         });
     }

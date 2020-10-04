@@ -98,7 +98,7 @@ export class StaticMap {
                         try {
                             await utils.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, drawable, this.scale, this.latitude, this.longitude, this.zoom);
                         } catch (e) {
-                            console.error('[ERROR]', e);
+                            console.error('Failed to combine images:', e);
                         }
                     } else if (drawable instanceof Polygon) {
                         await utils.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, drawable, this.scale, this.latitude, this.longitude, this.zoom, this.width, this.height);
