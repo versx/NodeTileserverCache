@@ -4,7 +4,8 @@
   "description": "",
   "main": "dist/src/index.js",
   "scripts": {
-    "start": "tsc && node ./dist/index.js",
+    "start": "tsc && npm run copyviews && node ./dist/index.js",
+    "copyviews": "cp -R src/views dist/",
     "start:watch": "nodemon",
     "start:production": "cd dist && node -r ts-node/register src/index.js",
     "build": "tsc -p tsconfig.json",
@@ -25,11 +26,13 @@
     "@mapbox/sphericalmercator": "^1.1.0",
     "@types/mapbox__sphericalmercator": "^1.1.3",
     "@types/mustache": "^4.0.1",
+    "axios": "^0.20.0",
+    "better-logging": "^4.4.0",
     "btoa": "^1.2.1",
     "dotenv": "^8.2.0",
-    "ejs": "^3.1.3",
+    "ejs": "^3.1.5",
     "express": "^4.17.1",
-    "request": "^2.88.2"
+    "nodemon": "^2.0.4"
   },
   "devDependencies": {
     "@types/btoa": "^1.2.3",

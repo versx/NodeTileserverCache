@@ -2,12 +2,16 @@
 
 import express from 'express';
 const app = express();
+import path from 'path';
 
 import * as routes from './routes/index';
 
 // Body parser middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+app.set('view engine', 'ejs');
+app.set('views', path.resolve(__dirname, 'views'));
 
 // Routing endpoints
 app.get('/', routes.getRoot);
@@ -18,13 +22,11 @@ app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', async (r
 
 app.get('/staticmap/:template', routes.getStaticMapTemplate);
 app.post('/staticmap/:template', routes.postStaticMapTemplate);
+
 app.get('/staticmap', routes.getStaticMap);
 app.post('/staticmap', routes.postStaticMap);
 
 app.get('/multistaticmap/:template', routes.getMultiStaticMapTemplate);
 app.post('/multistaticmap', routes.postMultiStaticMap);
-
-// Start cache cleaners
-routes.startCacheCleaners();
 
 export default app;

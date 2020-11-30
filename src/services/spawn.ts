@@ -7,16 +7,16 @@ export const exec = (path: string, args: string[]): unknown => {
         try {
             const shell = child.spawn(path, args);
             shell.stdout.on('data', (data: Buffer) => {
-                console.log('Stdout:' + data.toString());
+                console.debug('Stdout:' + data.toString());
             });
             shell.stderr.on('data', (data: Buffer) => {
-                console.log('[ERROR] Stderr:', data.toString());
+                console.error('Stderr:', data.toString());
                 resolve(data.toString());
             });
             shell.on('close', (code: number) => {
-                //console.log('Child process exited with code:', code);
+                //console.debug('Child process exited with code:', code);
                 if (code > 0) {
-                    console.error('[ERROR] Child process exited with non zero exit code:', code);
+                    console.error('Child process exited with non zero exit code:', code);
                 }
                 resolve(code);
             });

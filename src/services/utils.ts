@@ -1,9 +1,9 @@
 'use strict';
 
-
 import * as fs from 'fs';
-import request from 'request';
+import * as os from 'os';
 import SphericalMercator from '@mapbox/sphericalmercator';
+import axios from 'axios';
 import * as crypto from 'crypto';
 import btoa from 'btoa';
 
@@ -13,17 +13,16 @@ import { Marker } from '../models/marker';
 import { Polygon } from '../models/polygon';
 import { CombineDirection } from '../data/combine-direction';
 
+const ImageMagickPath = os.platform() === 'win32'
+    ? 'convert'
+    : '/usr/local/bin/convert';
 
 export const fileExists = async (path: string): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-        try {
-            fs.exists(path, (exists: boolean) => {
-                resolve(exists);
-            });
-        } catch (e) {
-            return reject(e);
-        }
-    });
+    return await fs.promises.access(path, fs.constants.F_OK)
+        .then(() => true)
+        .catch(err => {
+            return false;
+        });
 };
 
 export const fileLastModifiedTime = async (path: string): Promise<Date> => {
@@ -41,53 +40,21 @@ export const fileLastModifiedTime = async (path: string): Promise<Date> => {
     });
 };
 
-export const fileRead = async (path: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        try {
-            fs.readFile(path, 'utf-8', (err, data: string) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(data);
-            });
-        } catch (e) {
-            return reject(e);
-        }
-    });
-};
-
 export const getData = async (url: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        try {
-            request(url, (err, res, body) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(body);
-            });
-        } catch (e) {
-            return reject(e);
-        }
-    });
+    const response = await axios.get(url);
+    return response.data;
 };
 
-export const downloadFile = (from: string, to: string): Promise<void> => {
-    console.log(`DownloadFile [From: ${from} To: ${to}]`);
+export const downloadFile = async (from: string, to: string): Promise<void> => {
+    console.debug(`DownloadFile [From: ${from} To: ${to}]`);
+    const writer = fs.createWriteStream(to);
+    const response = await axios.get(from, {
+        responseType: 'stream'
+    });
+    response.data.pipe(writer);
     return new Promise((resolve, reject) => {
-        try {
-            request.head(from, (err, res, body) => {
-                if (err) {
-                    return reject(err);
-                }
-                request(from)
-                    .pipe(fs.createWriteStream(to))
-                    .on('close', () => {
-                        resolve();
-                    });
-            });
-        } catch (e) {
-            return reject(e);
-        }
+        writer.on('finish', resolve);
+        writer.on('error', reject);
     });
 };
 
@@ -107,32 +74,33 @@ export const getHashCode = (obj: unknown): string => {
     return hash;
 };
 
-export const touch = (fileName: string): void => {
+export const touch = async (fileName: string): Promise<void> => {
     try {
         const time = new Date();
-        fs.utimesSync(fileName, time, time);
+        await fs.promises.utimes(fileName, time, time);
     } catch (err) {
-        fs.closeSync(fs.openSync(fileName, 'w'));
+        const handle = await fs.promises.open(fileName, 'w');
+        fs.close(handle.fd, () => {});
     }
 };
 
 export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: string): Promise<void> => {
-    console.log(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
+    console.debug(`Combine Images Grid [Grids: ${grids}, DestinationPath: ${destinationPath}]`);
     const args = Array<string>();
     for (let i = 0; i < grids.length; i++) {
         const grid = grids[i];
-        args.push('\\(');
+        args.push('(');
         args.push(grid.firstPath);
-        //for (let j = 0; j < grid.images.length; j++) {
-        grid.images.forEach((image: any) => {
+        for (let j = 0; j < grid.images.length; j++) {
+            const image = grid.images[j];
             args.push(image.path);
             if (image.direction === CombineDirection.Bottom) {
                 args.push('-append');
             } else {
                 args.push('+append');
             }
-        });
-        args.push('\\)');
+        }
+        args.push(')');
         if (grid.direction === CombineDirection.Bottom) {
             args.push('-append');
         } else {
@@ -141,17 +109,17 @@ export const combineImagesGrid = async (grids: Array<Grid>, destinationPath: str
     }
     args.push(destinationPath);
 
-    //console.log('Grid Args:', args);
+    //console.debug('Grid Args:', args);
     try {
-        const shell = await exec('/usr/local/bin/convert', args);
-        console.log('Magick CombineImagesGrid:', shell);
+        const shell = await exec(ImageMagickPath, args);
+        console.debug('Magick CombineImagesGrid:', shell);
     } catch (e) {
         console.error('Failed to run magick:', e);
     }
 };
 
 export const combineImages = async (staticPath: string, markerPath: string, destinationPath: string, marker: Marker, scale: number, centerLat: number, centerLon: number, zoom: number): Promise<void> => {
-    //console.log(`Combine Images [StaticPath: ${staticPath}, MarkerPath: ${markerPath}, DestinationPath: ${destinationPath}, Marker: ${marker}, Scale: ${scale}, CenterLat: ${centerLat}, CenterLon: ${centerLon}, Zoom: ${zoom}]`);
+    //console.debug(`Combine Images [StaticPath: ${staticPath}, MarkerPath: ${markerPath}, DestinationPath: ${destinationPath}, Marker: ${marker}, Scale: ${scale}, CenterLat: ${centerLat}, CenterLon: ${centerLon}, Zoom: ${zoom}]`);
     const realOffset = getRealOffset(
         { latitude: marker.latitude, longitude: marker.longitude },
         { latitude: centerLat, longitude: centerLon },
@@ -162,7 +130,7 @@ export const combineImages = async (staticPath: string, markerPath: string, dest
     );
     const realOffsetXPrefix = realOffset.x >= 0 ? '+' : '';
     const realOffsetYPrefix = realOffset.y >= 0 ? '+' : '';
-    const shell = await exec('/usr/local/bin/convert', [
+    const shell = await exec(ImageMagickPath, [
         staticPath,
         '(', markerPath, '-resize', `${marker.width * scale}x${marker.height * scale}`, ')',
         '-gravity', 'Center',
@@ -170,7 +138,7 @@ export const combineImages = async (staticPath: string, markerPath: string, dest
         '-composite',
         destinationPath
     ]);
-    console.log('Magick CombineImages:', shell);
+    console.debug('Magick CombineImages:', shell);
 };
 
 export const drawPolygon = async (staticPath: string, destinationPath: string, polygon: Polygon, scale: number, centerLat: number, centerLon: number, zoom: number, width: number, height: number): Promise<void> => {
@@ -179,7 +147,7 @@ export const drawPolygon = async (staticPath: string, destinationPath: string, p
     for (let i = 0; i < polygons.length; i++) {
         const coord = polygons[i];
         if (coord.length !== 2) {
-            console.error('[ERROR] Polygon coordinates don\'t match up, aborting...');
+            console.error('Polygon coordinates don\'t match up, aborting...');
             return;
         }
         const point = getRealOffset(
@@ -198,7 +166,7 @@ export const drawPolygon = async (staticPath: string, destinationPath: string, p
 
     let polygonPath = points.map((value) => `${value.x},${value.y} `).join('');
     polygonPath = polygonPath.slice(0, polygonPath.length - 1);
-    const shell = await exec('/usr/local/bin/convert', [
+    const shell = await exec(ImageMagickPath, [
         staticPath,
         '-strokewidth', polygon.stroke_width?.toString(),
         '-fill', polygon.fill_color,
@@ -207,7 +175,7 @@ export const drawPolygon = async (staticPath: string, destinationPath: string, p
         '-draw', `polygon ${polygonPath}`,
         destinationPath 
     ]);
-    console.log('Magick DrawPolygon:', shell);
+    console.debug('Magick DrawPolygon:', shell);
 };
 
 export const getRealOffset = (at: { latitude: number, longitude: number }, relativeTo: { latitude: number, longitude: number }, zoom: number, scale: number, extraX: number, extraY: number): { x: number, y: number} => {

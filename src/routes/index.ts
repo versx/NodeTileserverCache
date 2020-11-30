@@ -1,4 +1,5 @@
-import fs from 'fs';
+'use strict';
+
 import path from 'path';
 import { Request, Response } from 'express';
 
@@ -7,80 +8,85 @@ import { Marker } from '../models/marker';
 import { MultiStaticMap } from '../models/multi-staticmap';
 import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
-import { CacheCleaner } from '../services/cache-cleaner';
 import { HitStats } from '../services/stats';
 import { Template } from '../services/template';
 import * as utils from '../services/utils';
-
 
 /**
  * GET /
  */
 export const getRoot = (req: Request, res: Response): void => {
-    let tileCacheHtml = '';
     const tileHitKeys = Object.keys(HitStats.tileHitRatio);
+    const tileHits: HitStatistics[] = [];
     if (tileHitKeys) {
         tileHitKeys.forEach((key: string) => {
             const style = HitStats.tileHitRatio[key];
             const hit = style.hit;
             const total = style.miss + style.hit;
             const percentage = Math.round(hit / total * 100);
-            tileCacheHtml += `<h3 align="center">${key}: ${hit}/${total} (${percentage}%)</h3>`;
+            tileHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
+            });
         });
     }
-    let staticCacheHtml = '';
     const staticHitKeys = Object.keys(HitStats.staticHitRatio);
+    const staticHits: HitStatistics[] = [];
     if (staticHitKeys) {
         staticHitKeys.forEach((key: string) => {
             const style = HitStats.staticHitRatio[key];
             const hit = style.hit;
             const total = style.miss + style.hit;
             const percentage = Math.round(hit / total * 100);
-            staticCacheHtml += `<h3 align="center">${key}: ${hit}/${total} (${percentage}%)</h3>`;
+            staticHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
+            });
         });
     }
-    let staticMarkerHtml = '';
     const staticMarkerHitKeys = Object.keys(HitStats.staticMarkerHitRatio);
+    const staticMarkerHits: HitStatistics[] = [];
     if (staticMarkerHitKeys) {
         staticMarkerHitKeys.forEach((key: string) => {
             const style = HitStats.staticMarkerHitRatio[key];
             const hit = style.hit;
             const total = style.miss + style.hit;
             const percentage = Math.round(hit / total * 100);
-            staticMarkerHtml += `<h3 align="center">${key}: ${hit}/${total} (${percentage}%)</h3>`;
+            staticMarkerHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
+            });
         });
     }
-    let markerCacheHtml = '';
     const markerHitKeys = Object.keys(HitStats.markerHitRatio);
+    const markerHits: HitStatistics[] = [];
     if (markerHitKeys) {
         markerHitKeys.forEach((key: string) => {
             const style = HitStats.markerHitRatio[key];
             const hit = style.hit;
             const total = style.miss + style.hit;
             const percentage = Math.round(hit / total * 100);
-            markerCacheHtml += `<h3 align="center">${key}: ${hit}/${total} (${percentage}%)</h3>`;
+            markerHits.push({
+                style: key,
+                hit,
+                total,
+                percentage
+            });
         });
     }
-    const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="utf-8"/>
-        <title>NodeTileserver Cache</title>
-    </head>
-    <body>
-        <h1 align="center">Node Tileserver Cache</h1><br>
-        <br><h2 align="center">Tiles Cache Hit-Rate (since restart)</h2>
-        ${tileCacheHtml}
-        <br><h2 align="center">Static Map Cache Hit-Rate (since restart)</h2>
-        ${staticCacheHtml}
-        <br><h2 align="center">Static Map with Marker Cache Hit-Rate (since restart)</h2>
-        ${staticMarkerHtml}
-        <br><h2 align="center">Marker Cache Hit-Rate (since restart)</h2>
-        ${markerCacheHtml}
-    </body>
-    `;
-    res.send(html);
+    res.render('stats', {
+        tileHits,
+        staticHits,
+        staticMarkerHits,
+        markerHits,
+    });
+    //res.send(html);
 };
 
 /**
@@ -89,17 +95,16 @@ export const getRoot = (req: Request, res: Response): void => {
 export const getStyles = async (req: Request, res: Response): Promise<void> => {
     const url = process.env.TILE_SERVER_URL + '/styles.json';
     const data = await utils.getData(url);
-    const obj = JSON.parse(data);
     // TODO: Use styles model/interface instead of Record<string, unknown>
-    const list = obj.map((x: Record<string, unknown>) => x.id);
-    res.json(list);
+    //const list = obj.map((x: Record<string, unknown>) => x.id);
+    res.json(data);
 };
 
 /**
  * GET /tile
  */
 export const getTile = async (req: Request, res: Response): Promise<void> => {
-    //console.log('Tile:', req.params);
+    //console.debug('Tile:', req.params);
     const style = req.params.style;
     const z = parseInt(req.params.z);
     const x = parseFloat(req.params.x);
@@ -109,7 +114,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     const fileName = path.resolve(globals.TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
     if (scale >= 1 && globals.ValidFormats.includes(format)) {
         if (await utils.fileExists(fileName)) {
-            utils.touch(fileName);
+            await utils.touch(fileName);
             HitStats.tileHit(style, false);
         } else {
             const scaleString = scale === 1 ? '' : `@${scale}x`;
@@ -123,15 +128,15 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
+    console.info(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
     res.sendFile(fileName, (error: Error) => {
         if (error) {
-            console.error('[ERROR] Failed to serve tile:', error);
+            console.error('Failed to serve tile:', error);
             return;
         }
     });
 
-    console.log('[STATS] Tile:', HitStats.tileHitRatio);
+    console.debug('Tile:', HitStats.tileHitRatio);
 };
 
 //http://10.0.0.2:43200/static/klokantech-basic/34.01/-117.01/15/300/175/1/png
@@ -143,7 +148,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
  * GET /static
  */
 export const getStatic = async (req: Request, res: Response): Promise<void> => {
-    //console.log('Static:', req.params);
+    //console.debug('Static:', req.params);
     const style = req.params.style;
     const lat = parseFloat(req.params.lat);
     const lon = parseFloat(req.params.lon);
@@ -157,28 +162,28 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
     const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
     const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.log('Static map:', staticMap);
+    //console.debug('Static map:', staticMap);
 
     let fileName: string;
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap:', e);
+        console.error('Failed to generate staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
+    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
 
-    console.log('[STATS] Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
+    console.debug('Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
 };
 
 /**
@@ -190,23 +195,23 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
     const template = await Template.render(name, req.query);
     const tplObj = JSON.parse(template);
     const staticMap = Object.assign(new StaticMap(), tplObj);
-    //console.log('Template StaticMap:', staticMap);
+    //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap from template:', e);
+        console.error('Failed to generate staticmap from template:', e);
         return res.send(e)
             .status(405)
             .end();
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${fileName}`);
+    console.info(`Serving Static: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -221,23 +226,23 @@ export const postStaticMapTemplate = async (req: Request, res: Response): Promis
     const template = await Template.render(name, req.body);
     const tplObj = JSON.parse(template);
     const staticMap = Object.assign(new StaticMap(), tplObj);
-    //console.log('Template StaticMap:', staticMap);
+    //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap from template:', e);
+        console.error('Failed to generate staticmap from template:', e);
         return res.send(e)
             .status(405)
             .end();
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${fileName}`);
+    console.info(`Serving Static: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -260,23 +265,23 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
     const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
     const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.log('Static map:', staticMap);
+    //console.debug('Static map:', staticMap);
 
     let fileName: string;
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap:', e);
+        console.error('Failed to generate staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
+    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -299,23 +304,23 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
     const polygons: Polygon[] = Polygon.parse(req.body.polygons);
     const markers: Marker[] = Marker.parse(req.body.markers);
     const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.log('Static map:', staticMap);
+    //console.debug('Static map:', staticMap);
 
     let fileName: string;
     try {
         fileName = await staticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate staticmap:', e);
+        console.error('Failed to generate staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
+    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -330,23 +335,23 @@ export const getMultiStaticMapTemplate = async (req: Request, res: Response): Pr
     const template = await Template.render(name, req.query);
     const tplObj = JSON.parse(template);
     const multiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
-    //console.log('MultiStaticMap:', multiStaticMap);
+    //console.debug('MultiStaticMap:', multiStaticMap);
 
     let fileName: string;
     try {
         fileName = await multiStaticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate multi staticmap:', e);
+        console.error('Failed to generate multi staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving MultiStatic: ${fileName}`);
+    console.info(`Serving MultiStatic: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
@@ -360,95 +365,28 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
     try {
         const grid = req.body.grid;
         const multiStaticMap = new MultiStaticMap(grid);
-        console.log('Multi Static map:', multiStaticMap);
+        console.debug('Multi Static map:', multiStaticMap);
         fileName = await multiStaticMap.generate();
     } catch (e) {
-        console.error('[ERROR] Failed to generate multi staticmap:', e);
+        console.error('Failed to generate multi staticmap:', e);
         return res.send(e)
             .status(405)
             .end();
     }
 
     res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.log(`Serving MultiStatic: ${fileName}`);
+    console.info(`Serving MultiStatic: ${fileName}`);
     res.sendFile(fileName, (err: Error) => {
         if (err) {
-            console.error('[ERROR] Failed to send static file:', err);
+            console.error('Failed to send static file:', err);
             return;
         }
     });
 };
 
-
-// Utilities
-const createDirectories = () => {
-    if (!fs.existsSync(globals.CacheDir)) {
-        fs.mkdir(globals.CacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.CacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.TileCacheDir)) {
-        fs.mkdir(globals.TileCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.TileCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticCacheDir)) {
-        fs.mkdir(globals.StaticCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticMultiCacheDir)) {
-        fs.mkdir(globals.StaticMultiCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticMultiCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticWithMarkersCacheDir)) {
-        fs.mkdir(globals.StaticWithMarkersCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.StaticWithMarkersCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.MarkerCacheDir)) {
-        fs.mkdir(globals.MarkerCacheDir, (err) => {
-            if (err) {
-                console.error('[ERROR] Failed to create directory:', globals.MarkerCacheDir);
-            }
-        });
-    }
-};
-
-export const startCacheCleaners = (): void => {
-    // Create cache directories
-    createDirectories();
-
-    // Start cache cleaners
-    new CacheCleaner(globals.TileCacheDir,
-        parseInt(process.env.TILE_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.TILE_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.StaticCacheDir,
-        parseInt(process.env.STATIC_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.STATIC_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.StaticMultiCacheDir,
-        parseInt(process.env.STATIC_MULTI_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.STATIC_MULTI_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.StaticWithMarkersCacheDir,
-        parseInt(process.env.STATIC_MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.STATIC_MARKER_CACHE_DELAY_SECONDS || '3600')
-    );
-    new CacheCleaner(globals.MarkerCacheDir,
-        parseInt(process.env.MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
-        parseInt(process.env.MARKER_CACHE_DELAY_SECONDS || '3600')
-    );
-};
+interface HitStatistics {
+    style: string;
+    hit: number;
+    total: number;
+    percentage: number;
+}

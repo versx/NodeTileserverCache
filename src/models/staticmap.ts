@@ -28,15 +28,15 @@ export class StaticMap {
         this.style = style;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.zoom = zoom;
+        this.zoom = zoom || 14;
         this.width = width;
         this.height = height;
-        this.scale = scale;
-        this.format = format;
-        this.bearing = bearing;
-        this.pitch = pitch;
-        this.markers = markers;
-        this.polygons = polygons;
+        this.scale = scale || 1;
+        this.format = format || 'png';
+        this.bearing = bearing || 0;
+        this.pitch = pitch || 0;
+        this.markers = markers || [];
+        this.polygons = polygons || [];
     }
 
     public async generate(): Promise<string> {
@@ -45,7 +45,7 @@ export class StaticMap {
             // Valid format, check if static file already exists
             if (await utils.fileExists(fileName)) {
                 // Static file exists, update last modified time
-                utils.touch(fileName);
+                await utils.touch(fileName);
                 HitStats.staticHit(this.style, false);
             } else {
                 // Static file does not exist, download from tileserver
@@ -57,67 +57,58 @@ export class StaticMap {
     
             const drawables: Array<Drawable> = [];
             if (this.markers && this.markers.length > 0) {
-                this.markers.forEach((marker: Marker) => drawables.push(Object.assign(new Marker(), marker)));
+                this.markers.forEach((marker: Marker) => drawables.push(new Marker(marker.url, marker.height, marker.width, marker.latitude, marker.longitude, marker.x_offset, marker.y_offset)));
             }
             if (this.polygons && this.polygons.length > 0) {
-                this.polygons.forEach((polygon: Polygon) => drawables.push(Object.assign(new Polygon(), polygon)));
+                this.polygons.forEach((polygon: Polygon) => drawables.push(new Polygon(polygon.fill_color, polygon.stroke_color, polygon.stroke_width, polygon.path)));
             }
     
-            //console.log('Drawable Objects:', drawables);
-            if (drawables.length > 0) {
-                const hashes = drawables.map(drawable => drawable.hashString);
-                const fileNameWithMarker = path.resolve(globals.StaticWithMarkersCacheDir, `${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes.join(',')}-${this.scale}.${this.format}`);
-                if (await utils.fileExists(fileNameWithMarker)) {
-                    utils.touch(fileName);
-                    HitStats.staticMarkerHit(this.style, false);
-                } else {
-                    let hashes = '';
-                    let fileNameWithMarkerFull = fileName;
-                    for (let i = 0; i < drawables.length; i++) {
-                        const drawable = drawables[i];
-                        //console.log('Hash:', drawable.hashString);
-                        hashes += drawable.hashString;
-                        const fileNameWithMarker = path.resolve(globals.StaticWithMarkersCacheDir, `${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
-                        if (await utils.fileExists(fileNameWithMarker)) {
-                            // Static with marker file exists, touch for last modified timestamp.
-                            utils.touch(fileName);
-                            HitStats.staticMarkerHit(this.style, false);
+            //console.debug('Drawable Objects:', drawables);
+            if (drawables.length === 0) {
+                // Serve static file without any drawable objects
+                return fileName;
+            }
+
+            // Hash all of the hashStrings for smaller filenames
+            const hashes = utils.getHashCode(drawables.map(drawable => drawable.hashString).join(','));
+            //console.debug('hashes:', hashes);
+            const fileNameWithMarker = path.resolve(globals.StaticWithMarkersCacheDir, `${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
+            if (await utils.fileExists(fileNameWithMarker)) {
+                // Static with marker file exists, touch for last modified timestamp.
+                await utils.touch(fileName);
+                HitStats.staticMarkerHit(this.style, false);
+            } else {
+                let fileNameWithMarkerFull = fileName;
+                for (let i = 0; i < drawables.length; i++) {
+                    const drawable = drawables[i];
+                    // Static with marker file does not exist, check if marker downloaded.
+                    console.info(`Building Static: ${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
+                    if (drawable instanceof Marker) {
+                        const markerUrlEncoded = utils.md5(drawable.url);
+                        const markerFileName = path.resolve(globals.MarkerCacheDir, markerUrlEncoded);
+                        if (await utils.fileExists(markerFileName)) {
+                            // Marker already downloaded, touch for last modified timestamp.
+                            await utils.touch(fileName);
+                            HitStats.markerHit(this.style, false);
                         } else {
-                            // Static with marker file does not exist, check if marker downloaded.
-                            console.log(`Building Static: ${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
-                            if (drawable instanceof Marker) {
-                                const marker = Object.assign(new Marker(), drawable);
-                                const markerUrlEncoded = utils.md5(marker.url);
-                                const markerFileName = path.resolve(globals.MarkerCacheDir, markerUrlEncoded);
-                                if (await utils.fileExists(markerFileName)) {
-                                    // Marker already downloaded, touch for last modified timestamp.
-                                    utils.touch(fileName);
-                                    HitStats.markerHit(this.style, false);
-                                } else {
-                                    // Download marker to cache for future use.
-                                    await utils.downloadFile(marker.url, markerFileName);
-                                    HitStats.markerHit(this.style, true);
-                                }
-                                try {
-                                    await utils.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, marker, this.scale, this.latitude, this.longitude, this.zoom);
-                                } catch (e) {
-                                    console.error('[ERROR]', e);
-                                }
-                            } else if (drawable instanceof Polygon) {
-                                const polygon = Object.assign(new Polygon(), drawable);
-                                await utils.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, polygon, this.scale, this.latitude, this.longitude, this.zoom, this.width, this.height);
-                            }
-                            HitStats.staticMarkerHit(this.style, true);
+                            // Download marker to cache for future use.
+                            await utils.downloadFile(drawable.url, markerFileName);
+                            HitStats.markerHit(this.style, true);
                         }
-                        hashes += ',';
-                        fileNameWithMarkerFull = fileNameWithMarker;
+                        try {
+                            await utils.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, drawable, this.scale, this.latitude, this.longitude, this.zoom);
+                        } catch (e) {
+                            console.error('Failed to combine images:', e);
+                        }
+                    } else if (drawable instanceof Polygon) {
+                        await utils.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, drawable, this.scale, this.latitude, this.longitude, this.zoom, this.width, this.height);
                     }
+                    HitStats.staticMarkerHit(this.style, true);
+                    fileNameWithMarkerFull = fileNameWithMarker;
                 }
-                // Serve static file
-                return fileNameWithMarker;
             }
             // Serve static file
-            return fileName;
+            return fileNameWithMarker;
         }
         return '';
     }
