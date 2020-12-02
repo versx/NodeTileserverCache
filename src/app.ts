@@ -6,6 +6,9 @@ import path from 'path';
 
 import * as routes from './routes/index';
 
+// Static paths
+app.use(express.static(path.resolve(__dirname, '../static')));
+
 // Body parser middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
