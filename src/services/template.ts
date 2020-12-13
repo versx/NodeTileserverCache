@@ -13,6 +13,9 @@ export class Template {
     public static render(name: string, data: ejs.Data): Promise<string> {
         return new Promise(async (resolve, reject) => {
             try {
+                if (!name.endsWith('.json')) {
+                    name += '.json';
+                }
                 const filePath = path.resolve(globals.TemplatesDir, name);
                 if (!await utils.fileExists(filePath)) {
                     console.error('Template', filePath, 'does not exist!');
