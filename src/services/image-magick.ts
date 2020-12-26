@@ -48,7 +48,7 @@ export class ImageMagick {
             let markerPath: string;
             if (marker.url.startsWith('http://') || marker.url.startsWith('https://')) {
                 const markerUrlEncoded = utils.md5(marker.url);
-                const markerFileName = path.resolve(globals.MarkerCacheDir, markerUrlEncoded);
+                const markerFileName = path.resolve(globals.MarkerCacheDir, markerUrlEncoded) + '.png';
                 if (await utils.fileExists(markerFileName)) {
                     // Marker file exists, update last modified time
                     await utils.touch(markerFileName);

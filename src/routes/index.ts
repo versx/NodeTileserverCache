@@ -235,7 +235,7 @@ export class RouteController {
             console.error('Failed to generate multi staticmap:', e);
             return sendErrorResponse(res, e);
         }
-        console.info(`Serving MultiStatic: ${path}`);
+        console.info(`Serving MultiStatic: ${fileName}`);
         sendResponse(res, fileName);
     }
 
@@ -255,6 +255,12 @@ export class RouteController {
         }
         console.info(`Serving MultiStatic: ${fileName}`);
         sendResponse(res, fileName);
+    }
+
+    /**
+     * GET /pregenerated/:id
+     */
+    async getPregeneratedStaticMap(req: Request, res: Response): Promise<void> {
     }
 }
 

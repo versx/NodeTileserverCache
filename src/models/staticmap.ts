@@ -43,6 +43,10 @@ export class StaticMap {
         this.markers = Marker.parse(args?.markers?.toString());
         this.polygons = Polygon.parse(args?.polygons?.toString());
         this.circles = Circle.parse(args?.circles?.toString());
+
+        if (args?.pregenerate || false) {
+            // Save pregenerated
+        }
     }
 
     public async generate(): Promise<string> {
@@ -89,7 +93,6 @@ export class StaticMap {
             await utils.touch(fileName);
             HitStats.staticMarkerHit(this.style, false);
         } else {
-            //await this.build(drawables, fileNameWithMarker, fileName, hashes);
             const args = await imageMagick.buildArguments(this, fileName, fileNameWithMarker);
             await imageMagick.generate(args);
         }

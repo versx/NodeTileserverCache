@@ -50,9 +50,10 @@ export class MultiStaticMap implements Drawable {
         }
     
         const grids = Array<Grid>();
-        const fileNameWithMarker = `${globals.StaticMultiCacheDir}/${this.hash}.png`;
-        if (await utils.fileExists(fileNameWithMarker)) {
-            //console.debug('Serving MutliStatic:', this);
+        const newHash = 'MS' + utils.getHashCode(this);
+        const fileNameWithMarker = `${globals.StaticMultiCacheDir}/${newHash}.png`;
+        if (this.hash === newHash && await utils.fileExists(fileNameWithMarker)) {
+            //console.debug('Serving MultiStatic:', this);
             return fileNameWithMarker;
         }
         
