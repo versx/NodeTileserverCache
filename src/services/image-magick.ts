@@ -129,7 +129,7 @@ export class ImageMagick {
     public async generate(args: string[]): Promise<void> {
         //console.debug('args:', args.join('\n'));
         const shell = await exec(ImageMagickPath, args);
-        console.info('Magick:', shell);
+        console.debug('Magick:', shell);
     }
 
     public async combineImagesGrid(grids: Array<Grid>, destinationPath: string): Promise<void> {
