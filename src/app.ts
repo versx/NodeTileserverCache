@@ -30,8 +30,10 @@ app.post('/staticmap/:template', router.postStaticMapTemplate);
 
 app.get('/staticmap', router.getStaticMap);
 app.post('/staticmap', router.postStaticMap);
+app.get('/staticmap/pregenerated/:id', router.getPregeneratedStaticMap);
 
 app.get('/multistaticmap/:template', router.getMultiStaticMapTemplate);
 app.post('/multistaticmap', router.postMultiStaticMap);
+app.get('/multistaticmap/pregenerated/:id', router.getPregeneratedMultiStaticMap);
 
 export default app;

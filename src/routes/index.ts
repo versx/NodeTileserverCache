@@ -217,6 +217,19 @@ export class RouteController {
     }
 
     /**
+     * GET /static/pregenerated/:id
+     */
+    async getPregeneratedStaticMap(req: Request, res: Response): Promise<void> {
+        const id = req.params.id;
+        const fileName = path.resolve(globals.StaticWithMarkersCacheDir, id);
+        if (!await utils.fileExists(fileName)) {
+            return sendErrorResponse(res, 'Pregenerated static map does not exist with id: ' + id);
+        }
+        console.info(`Serving Pregenerated Static: ${fileName}`);
+        sendResponse(res, fileName);
+    }
+
+    /**
      * GET /multistaticmap/:template
      */
     //http://127.0.0.1:43200/multistaticmap/multistaticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
@@ -258,13 +271,20 @@ export class RouteController {
     }
 
     /**
-     * GET /pregenerated/:id
+     * GET /multistaticmap/pregenerated/:id
      */
-    async getPregeneratedStaticMap(req: Request, res: Response): Promise<void> {
+    async getPregeneratedMultiStaticMap(req: Request, res: Response): Promise<void> {
+        const id = req.params.id;
+        const fileName = path.resolve(globals.StaticMultiCacheDir, id);
+        if (!await utils.fileExists(fileName)) {
+            return sendErrorResponse(res, 'Pregenerated multi static map does not exist with id: ' + id);
+        }
+        console.info(`Serving Pregenerated Multi Static: ${fileName}`);
+        sendResponse(res, fileName);
     }
 }
 
-const sendResponse = (res: Response, path: string, setCacheControl = true) => {
+const sendResponse = (res: Response, path: string, setCacheControl = true): void => {
     if (setCacheControl) {
         res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     }
@@ -276,7 +296,7 @@ const sendResponse = (res: Response, path: string, setCacheControl = true) => {
     });
 };
 
-const sendErrorResponse = (res: Response, err: any) => {
+const sendErrorResponse = (res: Response, err: any): void => {
     return res.send(err)
         .status(405)
         .end();
