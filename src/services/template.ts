@@ -15,7 +15,7 @@ export class Template {
         if (!this.name.endsWith('.json')) {
             this.name += '.json';
         }
-        this.filePath = path.resolve(globals.TemplatesDir, name);
+        this.filePath = path.resolve(globals.TemplatesDir, this.name);
     }
 
     public render(data: ejs.Data): Promise<string> {
