@@ -7,29 +7,36 @@ import * as utils from './utils';
 import * as globals from '../data/globals';
 
 export class Template {
-    constructor() {
+    public name: string;
+    public filePath: string;
+
+    constructor(name: string) {
+        this.name = name;
+        if (!this.name.endsWith('.json')) {
+            this.name += '.json';
+        }
+        this.filePath = path.resolve(globals.TemplatesDir, name);
     }
 
-    public static render(name: string, data: ejs.Data): Promise<string> {
-        return new Promise(async (resolve, reject) => {
+    public render(data: ejs.Data): Promise<string> {
+        return new Promise((resolve, reject) => {
             try {
-                if (!name.endsWith('.json')) {
-                    name += '.json';
-                }
-                const filePath = path.resolve(globals.TemplatesDir, name);
-                if (!await utils.fileExists(filePath)) {
-                    console.error('Template', filePath, 'does not exist!');
-                    return;
-                }
-                ejs.renderFile(filePath, data, (err, str) => {
-                    if (err) {
-                        return reject(err);
+                return utils.fileExists(this.filePath).then(exists => {
+                    if (exists) {
+                        ejs.renderFile(this.filePath, data, (err, str) => {
+                            if (err) {
+                                return reject(err);
+                            }
+                            resolve(str);
+                        });
+                    } else {
+                        console.error('Template', this.filePath, 'does not exist!');    
+                        return reject();
                     }
-                    resolve(str);
-                })
+                });
             } catch (e) {
                 return reject(e);
             }
         });
-    };
+    }
 }

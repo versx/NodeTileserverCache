@@ -9,7 +9,7 @@ export class Coordinate {
         this.longitude = longitude;
     }
 
-    public coordinate(radiusDistance: number, facingDirection: number) {
+    public coordinateFrom(radiusDistance: number, facingDirection: number): Coordinate {
         const distance = radiusDistance / 6_373_000.0;
         const direction = facingDirection;
         const latitude = this.latitude * Math.PI / 180.0;
@@ -23,9 +23,9 @@ export class Coordinate {
             Math.sin(direction) * Math.sin(distance) * Math.cos(latitude),
             Math.cos(distance) - Math.sin(latitude) * Math.sin(otherLatitude)
         );
-        return  new Coordinate(
+        return new Coordinate(
             otherLatitude * 180.0 / Math.PI,
             otherLongitude * 180.0 / Math.PI,
         );
     }
-};
+}

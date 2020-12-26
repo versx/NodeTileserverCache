@@ -31,12 +31,12 @@ export class ImageMagick {
     }
 
     public async buildArguments(staticmap: StaticMap): Promise<string[]> {
-        let args: string[] = [];
+        const args: string[] = [];
         const markerArgs: string[] = [];
         const staticmapCoord = new Coordinate(staticmap.latitude, staticmap.longitude);
         for (const marker of staticmap.markers || []) {
             const markerCoord = new Coordinate(marker.latitude, marker.longitude);
-            let realOffset = this.getRealOffset(
+            const realOffset = this.getRealOffset(
                 markerCoord,
                 staticmapCoord,
                 staticmap.zoom,
@@ -50,8 +50,8 @@ export class ImageMagick {
                 continue;
             }
 
-            let realOffsetXPrefix: string = realOffset.x >= 0 ? '+' : '';
-            let realOffsetYPrefix: string = realOffset.y >= 0 ? '+' : '';
+            const realOffsetXPrefix: string = realOffset.x >= 0 ? '+' : '';
+            const realOffsetYPrefix: string = realOffset.y >= 0 ? '+' : '';
 
             let markerPath: string;
             if (marker.url.startsWith('http://') || marker.url.startsWith('https://')) {
@@ -88,7 +88,7 @@ export class ImageMagick {
                 });
             }
             
-            let polygonPath:string = '';
+            let polygonPath = '';
             for (const point of points) {
                 polygonPath += `${point.x},${point.y} `;
             }
@@ -113,10 +113,10 @@ export class ImageMagick {
             );
             const radius = this.getRealOffset(
                 coord,
-                coord.coordinate(circle.radius, 0),
+                coord.coordinateFrom(circle.radius, 0),
                 staticmap.zoom,
                 staticmap.scale,
-            ).y
+            ).y;
             const x = point.x + Number(staticmap.width * staticmap.scale / 2);
             const y = point.y + Number(staticmap.height * staticmap.scale / 2);
             const args = [
@@ -145,8 +145,8 @@ export class ImageMagick {
                 height: 32,
                 latitude: lat,
                 longitude: lon,
-                bearing: 0,
-                pitch: 0
+                x_offset: 0,
+                y_offset: 0,
             }),
         ];
         const polygons: Polygon[] = [
@@ -230,7 +230,7 @@ export class ImageMagick {
             '-gravity', 'Center',
             '-geometry', `${realOffsetXPrefix}${realOffset.x}${realOffsetYPrefix}${realOffset.y}`,
             '-composite',
-            destinationPath
+            destinationPath,
         ]);
         console.debug('Magick CombineImages:', shell);
     }
@@ -262,19 +262,19 @@ export class ImageMagick {
             '-stroke', polygon.stroke_color,
             '-gravity', 'Center',
             '-draw', `polygon ${polygonPath}`,
-            destinationPath 
+            destinationPath,
         ]);
         console.debug('Magick DrawPolygon:', shell);
     }
     
     public async drawCircle(staticPath: string, destinationPath: string, circle: Circle, staticmap: StaticMap): Promise<void> {
         const circleCoord = new Coordinate(circle.latitude, circle.longitude);
-        const radiusCoord = circleCoord.coordinate(circle.radius, 0);
+        //const radiusCoord = circleCoord.coordinateFrom(circle.radius, 0);
         const staticMapCoord = new Coordinate(staticmap.latitude, staticmap.longitude);
         const point = this.getRealOffset(circleCoord, staticMapCoord, staticmap.zoom, staticmap.scale);
-        const radius = this.getRealOffset(circleCoord, radiusCoord, staticmap.zoom, staticmap.scale).y;
-        let x = point.x + Number(staticmap.width * staticmap.scale / 2);
-        let y = point.y + Number(staticmap.height * staticmap.scale / 2);
+        //const radius = this.getRealOffset(circleCoord, radiusCoord, staticmap.zoom, staticmap.scale).y;
+        const x = point.x + Number(staticmap.width * staticmap.scale / 2);
+        const y = point.y + Number(staticmap.height * staticmap.scale / 2);
         const shell = await exec(ImageMagickPath, [
             staticPath,
             '-strokewidth', circle.stroke_width?.toString(),
@@ -282,12 +282,12 @@ export class ImageMagick {
             '-stroke', circle.stroke_color,
             '-gravity', 'Center',
             '-draw', `circle ${x},${y} ${x - circle.radius},${y + circle.radius}`,
-            destinationPath 
+            destinationPath,
         ]);
-        console.debug('Magick DrawCircle:', shell);
+        console.info('Magick DrawCircle:', shell);
     }
 
-    private getRealOffset(at: Coordinate, relativeTo: Coordinate, zoom: number, scale: number, extraX: number = 0, extraY: number = 0): { x: number, y: number } {
+    private getRealOffset(at: Coordinate, relativeTo: Coordinate, zoom: number, scale: number, extraX = 0, extraY = 0): { x: number, y: number } {
         let realOffsetX: number;
         let realOffsetY: number;
         if (relativeTo.latitude === at.latitude && relativeTo.longitude === at.longitude) {
@@ -311,4 +311,4 @@ export class ImageMagick {
             y: realOffsetY + extraY * scale,
         };
     }
-};
+}

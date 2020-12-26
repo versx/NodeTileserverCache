@@ -57,6 +57,8 @@ export const touch = async (fileName: string): Promise<void> => {
         await fs.promises.utimes(fileName, time, time);
     } catch (err) {
         const handle = await fs.promises.open(fileName, 'w');
+        /* eslint-disable @typescript-eslint/no-empty-function */
         fs.close(handle.fd, () => {});
+        /* eslint-enable @typescript-eslint/no-empty-function */
     }
 };

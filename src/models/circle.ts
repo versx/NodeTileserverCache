@@ -2,6 +2,7 @@
 
 import { GenericsExtensions } from '../extensions/generics';
 import { Drawable } from '../interfaces/drawable';
+import { ICircle } from '../interfaces/icircle';
 import * as utils from '../services/utils';
 
 export class Circle implements Drawable {
@@ -14,7 +15,7 @@ export class Circle implements Drawable {
 
     public hash: string;
 
-    constructor(args: any) {
+    constructor(args: ICircle) {
         this.latitude = args?.latitude;
         this.longitude = args?.longitude;
         this.radius = args?.radius;

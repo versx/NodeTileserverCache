@@ -19,24 +19,24 @@ export class CacheCleaner {
     }
 
     private checkFiles(): void {
-        fs.readdir(this.folder, (err, files) => {
+        fs.readdir(this.folder, async (err, files) => {
             if (err) {
                 console.error('Failed to read cache directory.', 'Error:', err);
                 return;
             }
             if (files && files.length > 0) {
-                files.forEach(async (file: string) => {
+                for (const file in files) {
                     const filePath = path.resolve(this.folder, file);
                     if (await this.isFileTooOld(filePath)) {
                         console.info(`Removing file ${filePath} (Too old)`);
                         this.deleteFile(filePath);
                     }
-                });
+                }
             }
         });
     }
 
-    private isFileTooOld = async (path: string): Promise<Boolean> => {
+    private isFileTooOld = async (path: string): Promise<boolean> => {
         const lastModified = await utils.fileLastModifiedTime(path);
         const now = new Date();
         const delta = (now.getTime() - lastModified.getTime()) / 1000;

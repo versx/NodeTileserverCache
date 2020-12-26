@@ -8,19 +8,19 @@ betterLogging(console, {
 
 const stringToLogLevel = (level: string): number => {
     switch (level.toLowerCase()) {
-        case 'debug':
-            return 4;
-        case 'log':
-            return 3;
-        case 'info':
-            return 2;
-        case 'warn':
-        case 'line':
-            return 1;
-        case 'error':
-            return 0;
-        case 'off':
-            return -1;
+    case 'debug':
+        return 4;
+    case 'log':
+        return 3;
+    case 'info':
+        return 2;
+    case 'warn':
+    case 'line':
+        return 1;
+    case 'error':
+        return 0;
+    case 'off':
+        return -1;
     }
     return 3;
 };

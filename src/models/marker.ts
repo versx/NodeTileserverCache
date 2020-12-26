@@ -2,6 +2,7 @@
 
 import { GenericsExtensions } from '../extensions/generics';
 import { Drawable } from '../interfaces/drawable';
+import { IMarker } from '../interfaces/imarker';
 import * as utils from '../services/utils';
 
 export class Marker implements Drawable {
@@ -15,7 +16,7 @@ export class Marker implements Drawable {
 
     public hash: string;
 
-    constructor(args: any) {
+    constructor(args: IMarker) {
         this.url = args?.url;
         this.height = args?.height;
         this.width = args?.width;

@@ -5,9 +5,8 @@ const app = express();
 import path from 'path';
 
 import * as routes from './routes/index';
-import { ImageMagick } from './services/image-magick';
-
 /*
+import { ImageMagick } from './services/image-magick';
 (async () => {
     new ImageMagick().generate();
 })();

@@ -7,7 +7,7 @@ import * as globals from '../data/globals';
 import { HitStatistics } from '../interfaces/hit-statistics';
 import { MultiStaticMap } from '../models/multi-staticmap';
 import { StaticMap } from '../models/staticmap';
-import { HitStats } from '../services/stats';
+import { HitStats } from '../models/hit-stats';
 import { Template } from '../services/template';
 import * as utils from '../services/utils';
 
@@ -59,12 +59,13 @@ export const getRoot = (req: Request, res: Response): void => {
             percentage: Math.round(stats.hit / total * 100)
         });
     }
-    res.render('stats', {
+    const data = {
         tileHits,
         staticHits,
         staticMarkerHits,
         markerHits,
-    });
+    };
+    res.render('stats', data);
 };
 
 /**
@@ -90,19 +91,18 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
     const scale = parseInt(req.params.scale);
     const format = req.params.format;
     const fileName = path.resolve(globals.TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
-    if (scale >= 1 && globals.ValidFormats.includes(format)) {
-        if (await utils.fileExists(fileName)) {
-            await utils.touch(fileName);
-            HitStats.tileHit(style, false);
-        } else {
-            const scaleString = scale === 1 ? '' : `@${scale}x`;
-            const tileUrl = `${process.env.TILE_SERVER_URL}/styles/${style}/${z}/${x}/${y}/${scaleString}.${format}`;
-            await utils.downloadFile(tileUrl, fileName);
-            HitStats.tileHit(style, true);
-        }
-    } else {
+    if (!scale || scale <= 0 || !globals.ValidFormats.includes(format)) {
         // Failed
         return sendErrorResponse(res, 'Error'); // Bad request
+    }
+    if (await utils.fileExists(fileName)) {
+        await utils.touch(fileName);
+        HitStats.tileHit(style, false);
+    } else {
+        const scaleString = scale === 1 ? '' : `@${scale}x`;
+        const tileUrl = `${process.env.TILE_SERVER_URL}/styles/${style}/${z}/${x}/${y}/${scaleString}.${format}`;
+        await utils.downloadFile(tileUrl, fileName);
+        HitStats.tileHit(style, true);
     }
     console.info(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
     sendResponse(res, fileName);
@@ -135,9 +135,10 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
 //http://127.0.0.1:43200/staticmap/staticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
 export const getStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
     const name = req.params.template;
-    const template = await Template.render(name, req.query);
-    const tplObj = JSON.parse(template);
-    const staticMap = Object.assign(new StaticMap({}), tplObj);
+    const template = new Template(name);
+    const templateData = await template.render(req.query);
+    const tplObj = JSON.parse(templateData);
+    const staticMap: StaticMap = Object.assign(new StaticMap(null), tplObj);
     //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
@@ -157,9 +158,12 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
 //http://127.0.0.1:43200/staticmap/staticmap.example.json
 export const postStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
     const name = req.params.template;
-    const template = await Template.render(name, req.body);
-    const tplObj = JSON.parse(template);
-    const staticMap = Object.assign(new StaticMap({}), tplObj);
+    //const template = new Template(name);
+
+    const template = new Template(name);
+    const templateData = await template.render(req.body);
+    const tplObj = JSON.parse(templateData);
+    const staticMap: StaticMap = Object.assign(new StaticMap({}), tplObj);
     //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
@@ -215,9 +219,10 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
  */
 //http://127.0.0.1:43200/multistaticmap/multistaticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
 export const getMultiStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
-    const name: string = req.params.template;
-    const template: string = await Template.render(name, req.query);
-    const tplObj: any = JSON.parse(template);
+    const name = req.params.template;
+    const template = new Template(name);
+    const templateData = await template.render(req.query);
+    const tplObj = JSON.parse(templateData);
     const multiStaticMap: MultiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
     //console.debug('MultiStaticMap:', multiStaticMap);
 
@@ -240,7 +245,7 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
     try {
         const grid = req.body.grid;
         const multiStaticMap = new MultiStaticMap(grid);
-        console.debug('Multi Static map:', multiStaticMap);
+        //console.debug('Multi Static map:', multiStaticMap);
         fileName = await multiStaticMap.generate();
     } catch (e) {
         console.error('Failed to generate multi staticmap:', e);
@@ -263,7 +268,7 @@ const sendResponse = (res: Response, path: string, setCacheControl = true) => {
 };
 
 const sendErrorResponse = (res: Response, err: any) => {
-    res.send(err)
+    return res.send(err)
         .status(405)
         .end();
 };

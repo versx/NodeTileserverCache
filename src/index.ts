@@ -13,7 +13,7 @@ import './services/logger';
 // TODO: Run one ImageMagick command instead of one per drawable item on staticmap
 // TODO: Regeneratable and pregenerate staticmaps although meh :shrug:
 
-const createDirectory = (path: string) => {
+const createDirectory = (path: string): void => {
     if (!fs.existsSync(path)) {
         fs.mkdir(path, (err) => {
             if (err) {
@@ -43,7 +43,9 @@ if (cluster.isMaster) {
         console.info(`[Cluster] New worker online with id ${worker.id}`);
     });
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     cluster.on('exit', (worker, code, signal) => {
+    /* estlint-enable @typescript-eslint/no-unused-vars */
         console.warn(`[Cluster] Worker ${worker.process.pid} died with error code ${code}`);
     });
 
