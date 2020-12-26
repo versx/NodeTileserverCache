@@ -5,9 +5,9 @@ import { Request, Response } from 'express';
 
 import * as globals from '../data/globals';
 import { HitStatistics } from '../interfaces/hit-statistics';
+import { HitStats } from '../models/hit-stats';
 import { MultiStaticMap } from '../models/multi-staticmap';
 import { StaticMap } from '../models/staticmap';
-import { HitStats } from '../models/hit-stats';
 import { Template } from '../services/template';
 import * as utils from '../services/utils';
 

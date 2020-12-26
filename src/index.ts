@@ -10,7 +10,6 @@ import { CacheCleaner } from './services/cache-cleaner';
 import './services/logger';
 
 // TODO: Regeneratable and pregenerate staticmaps although meh :shrug:
-// TODO: Add local marker support
 
 const createDirectory = (path: string): void => {
     if (!fs.existsSync(path)) {

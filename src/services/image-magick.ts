@@ -53,8 +53,8 @@ export class ImageMagick {
                 }
                 markerPath = markerFileName;
             } else {
-                // TODO: Add local marker support
-                markerPath = `Markers/${marker.url}`;
+                // TODO: Test local marker support
+                markerPath = `static/markers/${marker.url}`;
             }
 
             markerArgs.push([
