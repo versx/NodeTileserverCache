@@ -61,7 +61,7 @@ export class StaticMap {
             HitStats.staticHit(this.style, false);
         } else {
             // Static file does not exist, download from tileserver
-            const scaleString = this.scale === 1 ? '' : `@${this.scale}x`;
+            const scaleString = this.scale == 1 ? '' : `@${this.scale}x`;
             const tileUrl = `${process.env.TILE_SERVER_URL}/styles/${this.style}/static/${this.longitude},${this.latitude},${this.zoom}/${this.width}x${this.height}${scaleString}.${this.format}`;
             await utils.downloadFile(tileUrl, fileName);
             HitStats.staticHit(this.style, true);

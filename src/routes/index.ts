@@ -119,7 +119,7 @@ export class RouteController {
      */
     async getStatic(req: Request, res: Response): Promise<void> {
         //console.debug('Static:', req.params);
-        const staticMap = new StaticMap(req.params);
+        const staticMap = new StaticMap(Object.assign(req.params, req.query));
         //console.debug('Static map:', staticMap);
 
         let fileName: string;
