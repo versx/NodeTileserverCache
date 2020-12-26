@@ -9,6 +9,7 @@ import { CombineDirection } from '../data/combine-direction';
 import * as globals from '../data/globals';
 import { Grid } from '../interfaces/grid';
 import { Coordinate } from '../models/coordinate';
+import { HitStats } from '../models/hit-stats';
 import { StaticMap } from '../models/staticmap';
 import * as utils from '../services/utils';
 
@@ -48,8 +49,13 @@ export class ImageMagick {
             if (marker.url.startsWith('http://') || marker.url.startsWith('https://')) {
                 const markerUrlEncoded = utils.md5(marker.url);
                 const markerFileName = path.resolve(globals.MarkerCacheDir, markerUrlEncoded);
-                if (!await utils.fileExists(markerFileName)) {
+                if (await utils.fileExists(markerFileName)) {
+                    // Marker file exists, update last modified time
+                    await utils.touch(markerFileName);
+                    HitStats.markerHit(staticmap.style, false);
+                } else {
                     await utils.downloadFile(marker.url, markerFileName);
+                    HitStats.markerHit(staticmap.style, true);
                 }
                 markerPath = markerFileName;
             } else {
