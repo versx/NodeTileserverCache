@@ -9,49 +9,13 @@ import * as globals from './data/globals';
 import { CacheCleaner } from './services/cache-cleaner';
 import './services/logger';
 
-// TODO: Test tiles
 // TODO: Cleanup code, separate into classes
 
-const createDirectories = () => {
-    if (!fs.existsSync(globals.CacheDir)) {
-        fs.mkdir(globals.CacheDir, (err) => {
+const createDirectory = (path: string) => {
+    if (!fs.existsSync(path)) {
+        fs.mkdir(path, (err) => {
             if (err) {
-                console.error('Failed to create directory:', globals.CacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.TileCacheDir)) {
-        fs.mkdir(globals.TileCacheDir, (err) => {
-            if (err) {
-                console.error('Failed to create directory:', globals.TileCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticCacheDir)) {
-        fs.mkdir(globals.StaticCacheDir, (err) => {
-            if (err) {
-                console.error('Failed to create directory:', globals.StaticCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticMultiCacheDir)) {
-        fs.mkdir(globals.StaticMultiCacheDir, (err) => {
-            if (err) {
-                console.error('Failed to create directory:', globals.StaticMultiCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.StaticWithMarkersCacheDir)) {
-        fs.mkdir(globals.StaticWithMarkersCacheDir, (err) => {
-            if (err) {
-                console.error('Failed to create directory:', globals.StaticWithMarkersCacheDir);
-            }
-        });
-    }
-    if (!fs.existsSync(globals.MarkerCacheDir)) {
-        fs.mkdir(globals.MarkerCacheDir, (err) => {
-            if (err) {
-                console.error('Failed to create directory:', globals.MarkerCacheDir);
+                console.error('Failed to create directory:', path);
             }
         });
     }
@@ -82,7 +46,12 @@ if (cluster.isMaster) {
     });
 
     // Create cache directories
-    createDirectories();
+    createDirectory(globals.CacheDir);
+    createDirectory(globals.TileCacheDir);
+    createDirectory(globals.StaticCacheDir);
+    createDirectory(globals.StaticMultiCacheDir);
+    createDirectory(globals.StaticWithMarkersCacheDir);
+    createDirectory(globals.MarkerCacheDir);
 
     // Start cache cleaners
     new CacheCleaner(globals.TileCacheDir,

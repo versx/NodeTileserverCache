@@ -18,7 +18,7 @@ export class CacheCleaner {
         console.info('Started cache directory cleaner for', this.folder);
     }
 
-    private checkFiles() {
+    private checkFiles(): void {
         fs.readdir(this.folder, (err, files) => {
             if (err) {
                 console.error('Failed to read cache directory.', 'Error:', err);
@@ -27,30 +27,38 @@ export class CacheCleaner {
             if (files && files.length > 0) {
                 files.forEach(async (file: string) => {
                     const filePath = path.resolve(this.folder, file);
-                    const lastModified = await utils.fileLastModifiedTime(filePath);
-                    const now = new Date();
-                    const delta = (now.getTime() - lastModified.getTime()) / 1000;
-                    console.debug('Time Delta:', delta);
-                    if (delta >= this.maxAgeMinutes * 60) {
+                    if (await this.isFileTooOld(filePath)) {
                         console.info(`Removing file ${filePath} (Too old)`);
-                        try {
-                            fs.unlink(filePath, (err) => {
-                                if (err) {
-                                    console.error('Failed to delete', filePath, 'Error:', err);
-                                    return;
-                                }
-                                console.info('File', filePath, 'deleted...');
-                            });
-                        } catch (e) {
-                            console.error('Failed to delete', filePath, 'Error:', e);
-                        }
+                        this.deleteFile(filePath);
                     }
                 });
             }
         });
     }
 
-    public stop() {
+    private isFileTooOld = async (path: string): Promise<Boolean> => {
+        const lastModified = await utils.fileLastModifiedTime(path);
+        const now = new Date();
+        const delta = (now.getTime() - lastModified.getTime()) / 1000;
+        console.debug('Time Delta:', delta);
+        return delta >= this.maxAgeMinutes * 60;
+    }
+
+    private deleteFile = (path: string): void => {
+        try {
+            fs.unlink(path, (err) => {
+                if (err) {
+                    console.error('Failed to delete', path, 'Error:', err);
+                    return;
+                }
+                console.info('File', path, 'deleted...');
+            });
+        } catch (e) {
+            console.error('Failed to delete', path, 'Error:', e);
+        }
+    }
+
+    public stop(): void {
         console.info('Stopping cache directory cleaner for', this.folder);
         clearInterval(this.timer);
     }
