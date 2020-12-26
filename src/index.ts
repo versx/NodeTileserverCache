@@ -41,9 +41,8 @@ if (cluster.isMaster) {
         console.info(`[Cluster] New worker online with id ${worker.id}`);
     });
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     cluster.on('exit', (worker, code, signal) => {
-    /* estlint-enable @typescript-eslint/no-unused-vars */
         console.warn(`[Cluster] Worker ${worker.process.pid} died with error code ${code}`);
     });
 

@@ -28,9 +28,8 @@ export class StaticMap {
     public polygons?: Polygon[];
     public circles?: Circle[];
 
-    /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+    /* eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types */
     constructor(args: any) {
-    /* eslint-enbale @typescript-eslint/explicit-module-boundary-types */
         this.style = args?.style;
         this.latitude = args?.latitude || args?.lat;
         this.longitude = args?.longitude || args?.lon;
