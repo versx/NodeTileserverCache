@@ -22,17 +22,16 @@ export class Template {
         return new Promise((resolve, reject) => {
             try {
                 return utils.fileExists(this.filePath).then(exists => {
-                    if (exists) {
-                        ejs.renderFile(this.filePath, data, (err, str) => {
-                            if (err) {
-                                return reject(err);
-                            }
-                            resolve(str);
-                        });
-                    } else {
+                    if (!exists) {
                         console.error('Template', this.filePath, 'does not exist!');    
                         return reject();
                     }
+                    ejs.renderFile(this.filePath, data, (err, str) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve(str);
+                    });
                 });
             } catch (e) {
                 return reject(e);

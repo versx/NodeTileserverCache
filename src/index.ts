@@ -9,9 +9,8 @@ import * as globals from './data/globals';
 import { CacheCleaner } from './services/cache-cleaner';
 import './services/logger';
 
-// TODO: Cleanup code, separate into classes
-// TODO: Run one ImageMagick command instead of one per drawable item on staticmap
 // TODO: Regeneratable and pregenerate staticmaps although meh :shrug:
+// TODO: Add local marker support
 
 const createDirectory = (path: string): void => {
     if (!fs.existsSync(path)) {

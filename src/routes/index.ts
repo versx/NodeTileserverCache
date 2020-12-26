@@ -158,8 +158,6 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
 //http://127.0.0.1:43200/staticmap/staticmap.example.json
 export const postStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
     const name = req.params.template;
-    //const template = new Template(name);
-
     const template = new Template(name);
     const templateData = await template.render(req.body);
     const tplObj = JSON.parse(templateData);
