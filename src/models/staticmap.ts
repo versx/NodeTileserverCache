@@ -3,11 +3,15 @@
 import path from 'path';
 
 import { Drawable } from './drawable';
+import { Circle } from './circle';
 import { Marker } from './marker';
 import { Polygon } from './polygon';
 import * as globals from '../data/globals';
 import { HitStats } from '../services/stats';
+import { ImageMagick } from '../services/image-magick';
 import * as utils from '../services/utils';
+
+const imagemagick = new ImageMagick();
 
 export class StaticMap {
     public style: string;
@@ -22,9 +26,11 @@ export class StaticMap {
     public pitch?: number;
     public markers?: Marker[];
     public polygons?: Polygon[];
+    public circles?: Circle[];
 
-    constructor(style = '', latitude = 0, longitude = 0, zoom = 14, width = 0, height = 0,
-        scale = 1, format = 'png', bearing = 0, pitch = 0, markers: Marker[] = [], polygons: Polygon[] = []) {
+    constructor(style = '', latitude = 0, longitude = 0, zoom = 14,
+        width = 0, height = 0, scale = 1, format = 'png', bearing = 0, pitch = 0,
+        markers: Marker[] = [], polygons: Polygon[] = [], circles: Circle[] = []) {
         this.style = style;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -37,6 +43,7 @@ export class StaticMap {
         this.pitch = pitch || 0;
         this.markers = markers || [];
         this.polygons = polygons || [];
+        this.circles = circles || [];
     }
 
     public async generate(): Promise<string> {
@@ -57,10 +64,16 @@ export class StaticMap {
     
             const drawables: Array<Drawable> = [];
             if (this.markers && this.markers.length > 0) {
-                this.markers.forEach((marker: Marker) => drawables.push(new Marker(marker.url, marker.height, marker.width, marker.latitude, marker.longitude, marker.x_offset, marker.y_offset)));
+                this.markers.forEach((marker: Marker) => drawables.push(
+                    new Marker(marker.url, marker.height, marker.width, marker.latitude, marker.longitude, marker.x_offset, marker.y_offset)));
             }
             if (this.polygons && this.polygons.length > 0) {
-                this.polygons.forEach((polygon: Polygon) => drawables.push(new Polygon(polygon.fill_color, polygon.stroke_color, polygon.stroke_width, polygon.path)));
+                this.polygons.forEach((polygon: Polygon) => drawables.push(
+                    new Polygon(polygon.fill_color, polygon.stroke_color, polygon.stroke_width, polygon.path)));
+            }
+            if (this.circles && this.circles.length > 0) {
+                this.circles.forEach((circle: Circle) => drawables.push(
+                    new Circle(circle.latitude, circle.longitude, circle.radius, circle.fill_color, circle.stroke_color, circle.stroke_width)));
             }
     
             //console.debug('Drawable Objects:', drawables);
@@ -79,8 +92,7 @@ export class StaticMap {
                 HitStats.staticMarkerHit(this.style, false);
             } else {
                 let fileNameWithMarkerFull = fileName;
-                for (let i = 0; i < drawables.length; i++) {
-                    const drawable = drawables[i];
+                for (const drawable of drawables) {
                     // Static with marker file does not exist, check if marker downloaded.
                     console.info(`Building Static: ${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
                     if (drawable instanceof Marker) {
@@ -96,13 +108,15 @@ export class StaticMap {
                             HitStats.markerHit(this.style, true);
                         }
                         try {
-                            await utils.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, drawable, this.scale, this.latitude, this.longitude, this.zoom);
+                            await imagemagick.combineImages(fileNameWithMarkerFull, markerFileName, fileNameWithMarker, drawable, this);
                         } catch (e) {
                             console.error('Failed to combine images:', e);
                         }
                     } else if (drawable instanceof Polygon) {
-                        await utils.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, drawable, this.scale, this.latitude, this.longitude, this.zoom, this.width, this.height);
-                    }
+                        await imagemagick.drawPolygon(fileNameWithMarkerFull, fileNameWithMarker, drawable, this);
+                    }/* else if (drawable instanceof Circle) {
+                        await imagemagick.drawCircle(fileNameWithMarkerFull, fileNameWithMarker, drawable, this);
+                    }*/
                     HitStats.staticMarkerHit(this.style, true);
                     fileNameWithMarkerFull = fileNameWithMarker;
                 }

@@ -5,6 +5,13 @@ const app = express();
 import path from 'path';
 
 import * as routes from './routes/index';
+import { ImageMagick } from './services/image-magick';
+
+/*
+(async () => {
+    new ImageMagick().generate();
+})();
+*/
 
 // Static paths
 app.use(express.static(path.resolve(__dirname, '../static')));
@@ -20,8 +27,8 @@ app.set('views', path.resolve(__dirname, 'views'));
 app.get('/', routes.getRoot);
 app.get('/styles', routes.getStyles);
 
-app.get('/tile/:style/:z/:x/:y/:scale/:format', async (req, res) => await routes.getTile(req, res));
-app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', async (req, res) => await routes.getStatic(req, res));
+app.get('/tile/:style/:z/:x/:y/:scale/:format', routes.getTile);
+app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', routes.getStatic);
 
 app.get('/staticmap/:template', routes.getStaticMapTemplate);
 app.post('/staticmap/:template', routes.postStaticMapTemplate);

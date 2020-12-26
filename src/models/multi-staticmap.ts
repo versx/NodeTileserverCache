@@ -5,7 +5,10 @@ import { Grid } from './grid';
 import { StaticMap } from './staticmap';
 import { CombineDirection } from '../data/combine-direction';
 import * as globals from '../data/globals';
+import { ImageMagick } from '../services/image-magick';
 import * as utils from '../services/utils';
+
+const imagemagick = new ImageMagick();
 
 export class MultiStaticMap implements Drawable {
     public grid: DirectionedMultiStaticMap[];
@@ -70,7 +73,7 @@ export class MultiStaticMap implements Drawable {
             }
             grids.push({ firstPath: firstMapUrl, direction: grid.direction, images: images });
         }
-        await utils.combineImagesGrid(grids, fileNameWithMarker);
+        await imagemagick.combineImagesGrid(grids, fileNameWithMarker);
         //console.debug('Serving MutliStatic:', this);
         return fileNameWithMarker;
     }
