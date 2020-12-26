@@ -262,8 +262,8 @@ const sendResponse = (res: Response, path: string, setCacheControl = true) => {
     });
 };
 
-const sendErrorResponse = (res: Response, ex: any) => {
-    res.send(ex)
+const sendErrorResponse = (res: Response, err: any) => {
+    res.send(err)
         .status(405)
         .end();
 };
