@@ -8,7 +8,7 @@ import { exec } from './spawn';
 import * as globals from '../data/globals';
 import { Circle } from '../models/circle';
 import { Coordinate } from '../models/coordinate';
-import { Grid } from '../models/grid';
+import { Grid } from '../interfaces/grid';
 import { Marker } from '../models/marker';
 import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
@@ -139,15 +139,44 @@ export class ImageMagick {
         const lat = 34.05;
         const lon = -117.05;
         const markers: Marker[] = [
-            new Marker('https://www.artfixdaily.com/images/c/90/a8/Pokemon_card34390x650.jpg', 32, 32, lat, lon, 0, 0),
+            new Marker({
+                url: 'https://www.artfixdaily.com/images/c/90/a8/Pokemon_card34390x650.jpg',
+                width: 32,
+                height: 32,
+                latitude: lat,
+                longitude: lon,
+                bearing: 0,
+                pitch: 0
+            }),
         ];
         const polygons: Polygon[] = [
             //new Polygon('green', 'black', 1, null),
         ];
         const circles: Circle[] = [
-            new Circle(lat, lon, 25, 'red', 'black', 1),
+            new Circle({
+                latitude: lat,
+                longitude: lon,
+                radius: 25,
+                fill_color: 'red',
+                stroke_color: 'black',
+                stroke_width: 1
+            }),
         ];
-        const staticmap = new StaticMap('dark-matter', lat, lon, 15, 300, 175, 1, 'png', 0, 0, markers, polygons, circles);
+        const staticmap = new StaticMap({
+            style: 'dark-matter',
+            latitude: lat,
+            longitude: lon,
+            zoom: 15,
+            width: 300,
+            height: 175,
+            scle: 1,
+            format: 'png',
+            bearing: 0,
+            pitch: 0,
+            markers: markers,
+            polygons: polygons,
+            circles: circles
+        });
         const args = await this.buildArguments(staticmap);
         console.debug('ImageMagick arguments:', args.join('\n'));
     }
@@ -252,7 +281,7 @@ export class ImageMagick {
             '-fill', circle.fill_color,
             '-stroke', circle.stroke_color,
             '-gravity', 'Center',
-            '-draw', `circle ${x},${y} ${x},${y + radius}`,
+            '-draw', `circle ${x},${y} ${x - circle.radius},${y + circle.radius}`,
             destinationPath 
         ]);
         console.debug('Magick DrawCircle:', shell);

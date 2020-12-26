@@ -10,6 +10,8 @@ import { CacheCleaner } from './services/cache-cleaner';
 import './services/logger';
 
 // TODO: Cleanup code, separate into classes
+// TODO: Run one ImageMagick command instead of one per drawable item on staticmap
+// TODO: Regeneratable and pregenerate staticmaps although meh :shrug:
 
 const createDirectory = (path: string) => {
     if (!fs.existsSync(path)) {

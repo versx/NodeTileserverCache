@@ -1,6 +1,7 @@
 'use strict';
 
-import { Drawable } from './drawable';
+import { GenericsExtensions } from '../extensions/generics';
+import { Drawable } from '../interfaces/drawable';
 import * as utils from '../services/utils';
 
 export class Polygon implements Drawable {
@@ -8,22 +9,17 @@ export class Polygon implements Drawable {
     public stroke_color: string;
     public stroke_width: number;
     public path: string;
-    public hashString: string;
+    public hash: string;
 
-    constructor(fillColor = '', strokeColor = '', strokeWidth = 0, path = '') {
-        this.fill_color = fillColor;
-        this.stroke_color = strokeColor;
-        this.stroke_width = strokeWidth;
-        this.path = path;
-        this.hashString = 'P' + utils.getHashCode(this);
+    constructor(args: any) {
+        this.fill_color = args?.fill_color || '';
+        this.stroke_color = args?.stroke_color || '';
+        this.stroke_width = args?.stroke_width || 0;
+        this.path = args?.path || '';
+        this.hash = 'P' + utils.getHashCode(this);
     }
 
-    public static parse(polygonsQuery: string): Polygon[] {
-        const list: Polygon[] = [];
-        const polygonsJson = (polygonsQuery || '')?.replace(/%22/g, '"');
-        if (polygonsJson) {
-            return JSON.parse(polygonsJson);
-        }
-        return list;
+    public static parse(query: string): Polygon[] {
+        return GenericsExtensions.parse<Polygon>(query);
     }
 }

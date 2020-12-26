@@ -4,9 +4,8 @@ import path from 'path';
 import { Request, Response } from 'express';
 
 import * as globals from '../data/globals';
-import { Marker } from '../models/marker';
+import { HitStatistics } from '../interfaces/hit-statistics';
 import { MultiStaticMap } from '../models/multi-staticmap';
-import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
 import { HitStats } from '../services/stats';
 import { Template } from '../services/template';
@@ -16,68 +15,48 @@ import * as utils from '../services/utils';
  * GET /
  */
 export const getRoot = (req: Request, res: Response): void => {
-    const tileHitKeys = Object.keys(HitStats.tileHitRatio);
     const tileHits: HitStatistics[] = [];
-    if (tileHitKeys) {
-        tileHitKeys.forEach((key: string) => {
-            const style = HitStats.tileHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
-            tileHits.push({
-                style: key,
-                hit,
-                total,
-                percentage
-            });
+    for (const style in HitStats.tileHitRatio) {
+        const stats = HitStats.tileHitRatio[style];
+        const total = stats.miss + stats.hit;
+        tileHits.push({
+            style,
+            hit: stats.hit,
+            total,
+            percentage: Math.round(stats.hit / total * 100)
         });
     }
-    const staticHitKeys = Object.keys(HitStats.staticHitRatio);
     const staticHits: HitStatistics[] = [];
-    if (staticHitKeys) {
-        staticHitKeys.forEach((key: string) => {
-            const style = HitStats.staticHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
-            staticHits.push({
-                style: key,
-                hit,
-                total,
-                percentage
-            });
+    for (const style in HitStats.staticHitRatio) {
+        const stats = HitStats.staticHitRatio[style];
+        const total = stats.miss + stats.hit;
+        staticHits.push({
+            style,
+            hit: stats.hit,
+            total,
+            percentage: Math.round(stats.hit / total * 100)
         });
     }
-    const staticMarkerHitKeys = Object.keys(HitStats.staticMarkerHitRatio);
     const staticMarkerHits: HitStatistics[] = [];
-    if (staticMarkerHitKeys) {
-        staticMarkerHitKeys.forEach((key: string) => {
-            const style = HitStats.staticMarkerHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
-            staticMarkerHits.push({
-                style: key,
-                hit,
-                total,
-                percentage
-            });
+    for (const style in HitStats.staticMarkerHitRatio) {
+        const stats = HitStats.staticMarkerHitRatio[style];
+        const total = stats.miss + stats.hit;
+        staticMarkerHits.push({
+            style,
+            hit: stats.hit,
+            total,
+            percentage: Math.round(stats.hit / total * 100)
         });
     }
-    const markerHitKeys = Object.keys(HitStats.markerHitRatio);
     const markerHits: HitStatistics[] = [];
-    if (markerHitKeys) {
-        markerHitKeys.forEach((key: string) => {
-            const style = HitStats.markerHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
-            markerHits.push({
-                style: key,
-                hit,
-                total,
-                percentage
-            });
+    for (const style in HitStats.markerHitRatio) {
+        const stats = HitStats.markerHitRatio[style];
+        const total = stats.miss + stats.hit;
+        markerHits.push({
+            style,
+            hit: stats.hit,
+            total,
+            percentage: Math.round(stats.hit / total * 100)
         });
     }
     res.render('stats', {
@@ -86,7 +65,6 @@ export const getRoot = (req: Request, res: Response): void => {
         staticMarkerHits,
         markerHits,
     });
-    //res.send(html);
 };
 
 /**
@@ -124,24 +102,12 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
         }
     } else {
         // Failed
-        res.send('Error'); // Bad request
+        return sendErrorResponse(res, 'Error'); // Bad request
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     console.info(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
-    res.sendFile(fileName, (error: Error) => {
-        if (error) {
-            console.error('Failed to serve tile:', error);
-            return;
-        }
-    });
-
-    console.debug('Tile:', HitStats.tileHitRatio);
+    sendResponse(res, fileName);
 };
 
-//http://10.0.0.2:43200/static/klokantech-basic/34.01/-117.01/15/300/175/1/png
-//http://tiles.example.com:8080/static/klokantech-basic/{0}/{1}/15/300/175/1/png
-//http://10.0.0.2:43200/static/basic-preview/47.404041/8.539621/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.404041,%22longitude%22:8.539621}]
 //http://10.0.1.55:43200/static/klokantech-basic/8.68641/47.52305/15/300/175/1/png?markers=[{"url":"https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8","height":32,"width":32,"x_offset":0,"y_offset":0,"latitude":47.52305,"longitude":8.686411}]&polygons=[{"fill_color":"rgba(100.0%,0.0%,0.0%,0.5)","stroke_color":"black","stroke_width":1,"path":"[[8.685018,47.523804],[8.685686,47.522246],[8.687436,47.522314],[8.686919,47.523887],[8.685018,47.523804]]"}]
 //http://127.0.0.1:43200/static/klokantech-basic/47.52305/8.68641/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.52305,%22longitude%22:8.686411}]&polygons=[{%22fill_color%22:%22rgba(100.0%,0.0%,0.0%,0.5)%22,%22stroke_color%22:%22black%22,%22stroke_width%22:1,%22path%22:%22[[47.523804,8.685018],[47.522246,8.685686],[47.522314,8.687436],[47.523887,8.686919],[47.523804,8.685018]]%22}]
 /**
@@ -149,19 +115,7 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
  */
 export const getStatic = async (req: Request, res: Response): Promise<void> => {
     //console.debug('Static:', req.params);
-    const style = req.params.style;
-    const lat = parseFloat(req.params.lat);
-    const lon = parseFloat(req.params.lon);
-    const zoom = parseInt(req.params.zoom);
-    const width = parseInt(req.params.width);
-    const height = parseInt(req.params.height);
-    const scale = parseInt(req.params.scale);
-    const format = req.params.format;
-    const bearing = parseInt(req.params.bearing || '0');
-    const pitch = parseInt(req.params.pitch || '0');
-    const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
-    const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
-    const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
+    const staticMap = new StaticMap(req.params);
     //console.debug('Static map:', staticMap);
 
     let fileName: string;
@@ -169,21 +123,10 @@ export const getStatic = async (req: Request, res: Response): Promise<void> => {
         fileName = await staticMap.generate();
     } catch (e) {
         console.error('Failed to generate staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        return sendErrorResponse(res, e);
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
-
-    console.debug('Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
+    console.info(`Serving Static: ${fileName}`);
+    sendResponse(res, fileName);
 };
 
 /**
@@ -194,7 +137,7 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
     const name = req.params.template;
     const template = await Template.render(name, req.query);
     const tplObj = JSON.parse(template);
-    const staticMap = Object.assign(new StaticMap(), tplObj);
+    const staticMap = Object.assign(new StaticMap({}), tplObj);
     //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
@@ -202,19 +145,10 @@ export const getStaticMapTemplate = async (req: Request, res: Response): Promise
         fileName = await staticMap.generate();
     } catch (e) {
         console.error('Failed to generate staticmap from template:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        return sendErrorResponse(res, e);
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     console.info(`Serving Static: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
+    sendResponse(res, fileName);
 };
 
 /**
@@ -225,7 +159,7 @@ export const postStaticMapTemplate = async (req: Request, res: Response): Promis
     const name = req.params.template;
     const template = await Template.render(name, req.body);
     const tplObj = JSON.parse(template);
-    const staticMap = Object.assign(new StaticMap(), tplObj);
+    const staticMap = Object.assign(new StaticMap({}), tplObj);
     //console.debug('Template StaticMap:', staticMap);
 
     let fileName: string;
@@ -233,38 +167,18 @@ export const postStaticMapTemplate = async (req: Request, res: Response): Promis
         fileName = await staticMap.generate();
     } catch (e) {
         console.error('Failed to generate staticmap from template:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        return sendErrorResponse(res, e);
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     console.info(`Serving Static: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
+    sendResponse(res, fileName);
 };
 
 /**
  * GET /staticmap
  */
+//http://127.0.0.1:43200/staticmap?style=dark-matter&latitude=34.01&longitude=-117.01&width=300&height=175&scale=1&format=png
 export const getStaticMap = async (req: Request, res: Response): Promise<void> => {
-    const style = req.query.style?.toString();
-    const lat = parseFloat(req.query.latitude?.toString() || req.query.lat?.toString());
-    const lon = parseFloat(req.query.longitude?.toString() || req.query.lon?.toString());
-    const zoom = parseInt(req.query.zoom?.toString());
-    const width = parseInt(req.query.width?.toString());
-    const height = parseInt(req.query.height?.toString());
-    const scale = parseInt(req.query.scale?.toString());
-    const format = req.query.format?.toString() || 'png';
-    const bearing = parseInt(req.query.bearing?.toString() || '0');
-    const pitch = parseInt(req.query.pitch?.toString() || '0');
-    const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
-    const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
-    const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
+    const staticMap = new StaticMap(req.query);
     //console.debug('Static map:', staticMap);
 
     let fileName: string;
@@ -272,38 +186,17 @@ export const getStaticMap = async (req: Request, res: Response): Promise<void> =
         fileName = await staticMap.generate();
     } catch (e) {
         console.error('Failed to generate staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        return sendErrorResponse(res, e);
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
+    console.info(`Serving Static: ${fileName}`);
+    sendResponse(res, fileName);
 };
 
 /**
  * POST /staticmap
  */
 export const postStaticMap = async (req: Request, res: Response): Promise<void> => {
-    const style = req.body.style;
-    const lat = parseFloat(req.body.latitude || req.body.lat);
-    const lon = parseFloat(req.body.longitude || req.body.lon);
-    const zoom = parseInt(req.body.zoom);
-    const width = parseInt(req.body.width);
-    const height = parseInt(req.body.height);
-    const scale = parseInt(req.body.scale);
-    const format = req.body.format || 'png';
-    const bearing = parseInt(req.body.bearing || '0');
-    const pitch = parseInt(req.body.pitch || '0');
-    const polygons: Polygon[] = Polygon.parse(req.body.polygons);
-    const markers: Marker[] = Marker.parse(req.body.markers);
-    const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
+    const staticMap = new StaticMap(req.body);
     //console.debug('Static map:', staticMap);
 
     let fileName: string;
@@ -311,19 +204,10 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
         fileName = await staticMap.generate();
     } catch (e) {
         console.error('Failed to generate staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        return sendErrorResponse(res, e);
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
+    console.info(`Serving Static: ${fileName}`);
+    sendResponse(res, fileName);
 };
 
 /**
@@ -331,10 +215,10 @@ export const postStaticMap = async (req: Request, res: Response): Promise<void> 
  */
 //http://127.0.0.1:43200/multistaticmap/multistaticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
 export const getMultiStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
-    const name = req.params.template;
-    const template = await Template.render(name, req.query);
-    const tplObj = JSON.parse(template);
-    const multiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
+    const name: string = req.params.template;
+    const template: string = await Template.render(name, req.query);
+    const tplObj: any = JSON.parse(template);
+    const multiStaticMap: MultiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
     //console.debug('MultiStaticMap:', multiStaticMap);
 
     let fileName: string;
@@ -342,19 +226,10 @@ export const getMultiStaticMapTemplate = async (req: Request, res: Response): Pr
         fileName = await multiStaticMap.generate();
     } catch (e) {
         console.error('Failed to generate multi staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        return sendErrorResponse(res, e);
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving MultiStatic: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
+    console.info(`Serving MultiStatic: ${path}`);
+    sendResponse(res, fileName);
 };
 
 /**
@@ -369,14 +244,17 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
         fileName = await multiStaticMap.generate();
     } catch (e) {
         console.error('Failed to generate multi staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        return sendErrorResponse(res, e);
     }
-
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     console.info(`Serving MultiStatic: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
+    sendResponse(res, fileName);
+};
+
+const sendResponse = (res: Response, path: string, setCacheControl = true) => {
+    if (setCacheControl) {
+        res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
+    }
+    res.sendFile(path, (err: Error) => {
         if (err) {
             console.error('Failed to send static file:', err);
             return;
@@ -384,9 +262,8 @@ export const postMultiStaticMap = async (req: Request, res: Response): Promise<v
     });
 };
 
-interface HitStatistics {
-    style: string;
-    hit: number;
-    total: number;
-    percentage: number;
-}
+const sendErrorResponse = (res: Response, ex: any) => {
+    res.send(ex)
+        .status(405)
+        .end();
+};

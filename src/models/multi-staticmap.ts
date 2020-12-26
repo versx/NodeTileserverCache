@@ -1,7 +1,7 @@
 'use strict';
 
-import { Drawable } from './drawable';
-import { Grid } from './grid';
+import { Drawable } from '../interfaces/drawable';
+import { Grid } from '../interfaces/grid';
 import { StaticMap } from './staticmap';
 import { CombineDirection } from '../data/combine-direction';
 import * as globals from '../data/globals';
@@ -12,11 +12,11 @@ const imagemagick = new ImageMagick();
 
 export class MultiStaticMap implements Drawable {
     public grid: DirectionedMultiStaticMap[];
-    public hashString: string;
+    public hash: string;
 
     constructor(grid: DirectionedMultiStaticMap[] = []) {
         this.grid = grid;
-        this.hashString = 'SM' + utils.getHashCode(this);
+        this.hash = 'MS' + utils.getHashCode(this);
     }
 
     public async generate(): Promise<string> {
@@ -34,14 +34,14 @@ export class MultiStaticMap implements Drawable {
                 return '';
             }
         }
-        for (let i = 0; i < this.grid.length; i++) {
-            const grid = this.grid[i];
+        for (const grid of this.grid) {
             if (grid.maps[0].direction !== CombineDirection.First) {
                 console.error('First map in grid requires direction: "First"');
                 return '';
             }
-            for (let j = 1; j < grid.maps.length - 1; j++) {
-                const map = grid.maps[j];
+            // TODO: Use .shift()
+            for (let i = 1; i < grid.maps.length - 1; i++) {
+                const map = grid.maps[i];
                 if (map.direction === CombineDirection.First) {
                     console.error('Only first map in grid is allowed to be direction: "First"');
                     return '';
@@ -50,20 +50,17 @@ export class MultiStaticMap implements Drawable {
         }
     
         const grids = Array<Grid>();
-        const fileNameWithMarker = `${globals.StaticMultiCacheDir}/${this.hashString}.png`;
+        const fileNameWithMarker = `${globals.StaticMultiCacheDir}/${this.hash}.png`;
         if (await utils.fileExists(fileNameWithMarker)) {
             //console.debug('Serving MutliStatic:', this);
             return fileNameWithMarker;
         }
         
-        for (let i = 0; i < this.grid.length; i++) {
+        for (const grid of this.grid) {
             let firstMapUrl = '';
-            const grid = this.grid[i];
             const images: Array<{ direction: CombineDirection, path: string }> = [];
-            for (let j = 0; j < grid.maps.length; j++) {
-                const map = grid.maps[j];
-                const staticMap = Object.assign(new StaticMap(), map.map);
-                //const staticMap = new StaticMap(map.map.style, map.map.latitude, map.map.longitude, map.map.zoom, map.map.width, map.map.height, map.map.scale, map.map.format, map.map.bearing, map.map.pitch, map.map.markers, map.map.polygons);
+            for (const map of grid.maps) {
+                const staticMap = Object.assign(new StaticMap({}), map.map);
                 const url = await staticMap.generate();
                 if (map.direction === CombineDirection.First) {
                     firstMapUrl = url;

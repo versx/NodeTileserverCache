@@ -1,6 +1,7 @@
 'use strict';
 
-import { Drawable } from './drawable';
+import { GenericsExtensions } from '../extensions/generics';
+import { Drawable } from '../interfaces/drawable';
 import * as utils from '../services/utils';
 
 export class Marker implements Drawable {
@@ -12,25 +13,20 @@ export class Marker implements Drawable {
     public x_offset: number;
     public y_offset: number;
 
-    public hashString: string;
+    public hash: string;
 
-    constructor(url = '', height = 0, width = 0, latitude = 0, longitude = 0, x_offset = 0, y_offset = 0) {
-        this.url = url;
-        this.height = height;
-        this.width = width;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.x_offset = x_offset || 0;
-        this.y_offset = y_offset || 0;
-        this.hashString = 'M' + utils.getHashCode(this);
+    constructor(args: any) {
+        this.url = args?.url;
+        this.height = args?.height;
+        this.width = args?.width;
+        this.latitude = args?.latitude;
+        this.longitude = args?.longitude;
+        this.x_offset = args?.x_offset || 0;
+        this.y_offset = args?.y_offset || 0;
+        this.hash = 'M' + utils.getHashCode(this);
     }
 
-    public static parse(markersQuery: string): Marker[] {
-        const list: Marker[] = [];
-        const markersJson = (markersQuery || '')?.replace(/%22/g, '"');
-        if (markersJson) {
-            return JSON.parse(markersJson);
-        }
-        return list;
+    public static parse(query: string): Marker[] {
+        return GenericsExtensions.parse<Marker>(query);
     }
 }
