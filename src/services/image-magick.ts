@@ -22,15 +22,6 @@ const ImageMagickPath = os.platform() === 'win32'
 const sphericalMercator = new SphericalMercator({});
 
 export class ImageMagick {
-    public markers: Marker[];
-    public polygons: Polygon[];
-    public circles: Circle[];
-
-    constructor(markers: Marker[] = [], polygons: Polygon[] = [], circles: Circle[] = []) {
-        this.markers = markers;
-        this.polygons = polygons;
-        this.circles = circles;
-    }
 
     public async buildArguments(staticmap: StaticMap, tilePath: string, destinationPath: string): Promise<string[]> {
         let args: string[] = [];
