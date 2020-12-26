@@ -8,10 +8,7 @@ import { exec } from './spawn';
 import { CombineDirection } from '../data/combine-direction';
 import * as globals from '../data/globals';
 import { Grid } from '../interfaces/grid';
-import { Circle } from '../models/circle';
 import { Coordinate } from '../models/coordinate';
-import { Marker } from '../models/marker';
-import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
 import * as utils from '../services/utils';
 
@@ -166,29 +163,7 @@ export class ImageMagick {
             console.error('Failed to run magick:', e);
         }
     }
-    
-    public async combineImages(staticPath: string, markerPath: string, destinationPath: string, marker: Marker, staticmap: StaticMap): Promise<void> {
-        const realOffset = this.getRealOffset(
-            new Coordinate(marker.latitude, marker.longitude),
-            new Coordinate(staticmap.latitude, staticmap.longitude),
-            staticmap.zoom,
-            staticmap.scale,
-            marker.x_offset,
-            marker.y_offset
-        );
-        const realOffsetXPrefix = realOffset.x >= 0 ? '+' : '';
-        const realOffsetYPrefix = realOffset.y >= 0 ? '+' : '';
-        const shell = await exec(ImageMagickPath, [
-            staticPath,
-            '(', markerPath, '-resize', `${marker.width * staticmap.scale}x${marker.height * staticmap.scale}`, ')',
-            '-gravity', 'Center',
-            '-geometry', `${realOffsetXPrefix}${realOffset.x}${realOffsetYPrefix}${realOffset.y}`,
-            '-composite',
-            destinationPath,
-        ]);
-        console.debug('Magick CombineImages:', shell);
-    }
-    
+   
     private getRealOffset(at: Coordinate, relativeTo: Coordinate, zoom: number, scale: number, extraX = 0, extraY = 0): Point {
         let realOffsetX: number;
         let realOffsetY: number;
