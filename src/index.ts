@@ -9,8 +9,6 @@ import * as globals from './data/globals';
 import { CacheCleaner } from './services/cache-cleaner';
 import './services/logger';
 
-// TODO: Regeneratable and pregenerate staticmaps although meh :shrug:
-
 const createDirectory = async (path: string): Promise<void> => {
     if (!fs.existsSync(path)) {
         const result = await fs.promises.mkdir(path, { recursive: true });
