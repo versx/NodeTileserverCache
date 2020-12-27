@@ -1,6 +1,7 @@
 'use strict';
 
 import path from 'path';
+import * as fs from 'fs';
 
 import { Drawable } from '../interfaces/drawable';
 import { Circle } from './circle';
@@ -24,9 +25,11 @@ export class StaticMap {
     public format?: string;
     public bearing?: number;
     public pitch?: number;
-    public markers?: Marker[];
-    public polygons?: Polygon[];
-    public circles?: Circle[];
+    public markers?: Marker[] = [];
+    public polygons?: Polygon[] = [];
+    public circles?: Circle[] = [];
+
+    public regeneratable: Boolean = false;
 
     /* eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types */
     constructor(args: any) {
@@ -40,13 +43,22 @@ export class StaticMap {
         this.format = args?.format || 'png';
         this.bearing = args?.bearing || 0;
         this.pitch = args?.pitch || 0;
-        this.markers = Marker.parse(args?.markers?.toString());
-        this.polygons = Polygon.parse(args?.polygons?.toString());
-        this.circles = Circle.parse(args?.circles?.toString());
-
-        if (args?.pregenerate || false) {
-            // Save pregenerated
+        if (typeof args?.markers === 'object') {
+            this.markers = args?.markers || [];
+        } else {
+            this.markers = Marker.parse(args?.markers?.toString());
         }
+        if (typeof args?.polygons === 'object') {
+            this.polygons = args?.polygons || [];
+        } else {
+            this.polygons = Polygon.parse(args?.polygons?.toString());
+        }
+        if (typeof args?.circles === 'object') {
+            this.circles = args?.circles || [];
+        } else {
+            this.circles = Circle.parse(args?.circles?.toString());
+        }
+        this.regeneratable = args?.regeneratable !== undefined && args?.regeneratable !== false;
     }
 
     public async generate(): Promise<string> {
@@ -76,6 +88,11 @@ export class StaticMap {
         }
         if (this.markers && this.markers.length > 0) {
             this.markers.forEach((marker: Marker) => drawables.push(marker));
+        }
+
+        if (this.regeneratable) {
+            const id = await utils.storeRegenerable<StaticMap>(this);
+            return id;
         }
 
         //console.debug('Drawable Objects:', drawables);

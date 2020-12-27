@@ -1,5 +1,6 @@
 'use strict';
 
+import * as fs from 'fs';
 import path from 'path';
 import { Request, Response } from 'express';
 
@@ -130,7 +131,7 @@ export class RouteController {
             return sendErrorResponse(res, e);
         }
         console.info(`Serving Static: ${fileName}`);
-        sendResponse(res, fileName);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
     /**
@@ -153,7 +154,7 @@ export class RouteController {
             return sendErrorResponse(res, e);
         }
         console.info(`Serving Static: ${fileName}`);
-        sendResponse(res, fileName);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
     /**
@@ -176,7 +177,7 @@ export class RouteController {
             return sendErrorResponse(res, e);
         }
         console.info(`Serving Static: ${fileName}`);
-        sendResponse(res, fileName);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
     /**
@@ -195,7 +196,7 @@ export class RouteController {
             return sendErrorResponse(res, e);
         }
         console.info(`Serving Static: ${fileName}`);
-        sendResponse(res, fileName);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
     /**
@@ -213,7 +214,7 @@ export class RouteController {
             return sendErrorResponse(res, e);
         }
         console.info(`Serving Static: ${fileName}`);
-        sendResponse(res, fileName);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
     /**
@@ -221,9 +222,21 @@ export class RouteController {
      */
     async getPregeneratedStaticMap(req: Request, res: Response): Promise<void> {
         const id = req.params.id;
-        const fileName = path.resolve(globals.StaticWithMarkersCacheDir, id);
-        if (!await utils.fileExists(fileName)) {
-            return sendErrorResponse(res, 'Pregenerated static map does not exist with id: ' + id);
+        const regenFileName = path.resolve(globals.RegeneratableCacheDir, id) + '.json';
+        if (!await utils.fileExists(regenFileName)) {
+            return sendErrorResponse(res, 'Pregenerated staticmap does not exist with id: ' + id);
+        }
+        const fileData = fs.readFileSync(regenFileName, { encoding: 'utf8' });
+        const obj = JSON.parse(fileData);
+        const staticMap = new StaticMap(obj);
+        staticMap.regeneratable = false;
+
+        let fileName: string;
+        try {
+            fileName = await staticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate pregenerated staticmap:', e);
+            return sendErrorResponse(res, e);
         }
         console.info(`Serving Pregenerated Static: ${fileName}`);
         sendResponse(res, fileName);
@@ -275,25 +288,41 @@ export class RouteController {
      */
     async getPregeneratedMultiStaticMap(req: Request, res: Response): Promise<void> {
         const id = req.params.id;
-        const fileName = path.resolve(globals.StaticMultiCacheDir, id);
-        if (!await utils.fileExists(fileName)) {
-            return sendErrorResponse(res, 'Pregenerated multi static map does not exist with id: ' + id);
+        const regenFileName = path.resolve(globals.StaticMultiCacheDir, id) + '.json';
+        if (!await utils.fileExists(regenFileName)) {
+            return sendErrorResponse(res, 'Pregenerated multi staticmap does not exist with id: ' + id);
+        }
+        const fileData = fs.readFileSync(regenFileName, { encoding: 'utf8' });
+        const obj = JSON.parse(fileData);
+        const multiStaticMap: MultiStaticMap = Object.assign(new MultiStaticMap(), obj);
+
+        let fileName: string;
+        try {
+            fileName = await multiStaticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate pregenerated multi staticmap:', e);
+            return sendErrorResponse(res, e);
         }
         console.info(`Serving Pregenerated Multi Static: ${fileName}`);
         sendResponse(res, fileName);
     }
 }
 
-const sendResponse = (res: Response, path: string, setCacheControl = true): void => {
-    if (setCacheControl) {
+const sendResponse = (res: Response, path: string, setCacheControl: Boolean = true, regeneratable: Boolean = false): void => {
+    if (setCacheControl && !regeneratable) {
         res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     }
-    res.sendFile(path, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
+    if (regeneratable) {
+        res.setHeader('content-type', 'text/html');
+        res.send(path);
+    } else {
+        res.sendFile(path, (err: Error) => {
+            if (err) {
+                console.error('Failed to send static file:', err);
+                return;
+            }
+        });
+    }
 };
 
 const sendErrorResponse = (res: Response, err: any): void => {

@@ -4,7 +4,9 @@ import * as fs from 'fs';
 import axios from 'axios';
 import * as crypto from 'crypto';
 import btoa from 'btoa';
+import * as path from 'path';
 
+import * as globals from '../data/globals';
 
 export const fileExists = async (path: string): Promise<boolean> => {
     return await fs.promises.access(path, fs.constants.F_OK)
@@ -60,4 +62,12 @@ export const touch = async (fileName: string): Promise<void> => {
         /* eslint-disable-next-line @typescript-eslint/no-empty-function */
         fs.close(handle.fd, () => {});
     }
+};
+
+export const storeRegenerable = async <T>(staticmap: T): Promise<string> => {
+    const id = getHashCode(staticmap);
+    const fileName = path.resolve(globals.RegeneratableCacheDir, id) + '.json';
+    const fileData = JSON.stringify(staticmap);
+    fs.writeFileSync(fileName, fileData);
+    return id;
 };

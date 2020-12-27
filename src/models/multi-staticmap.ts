@@ -13,10 +13,12 @@ const imagemagick = new ImageMagick();
 export class MultiStaticMap implements Drawable {
     public grid: DirectionedMultiStaticMap[];
     public hash: string;
+    public regeneratable: Boolean = false;
 
-    constructor(grid: DirectionedMultiStaticMap[] = []) {
+    constructor(grid: DirectionedMultiStaticMap[] = [], regeneratable: Boolean = false) {
         this.grid = grid;
         this.hash = 'MS' + utils.getHashCode(this);
+        this.regeneratable = regeneratable !== undefined && regeneratable !== false;
     }
 
     public async generate(): Promise<string> {
@@ -47,6 +49,11 @@ export class MultiStaticMap implements Drawable {
                     return '';
                 }
             }
+        }
+
+        if (this.regeneratable) {
+            const id = await utils.storeRegenerable<MultiStaticMap>(this);
+            return id;
         }
     
         const grids = Array<Grid>();

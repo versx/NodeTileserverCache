@@ -53,6 +53,7 @@ if (cluster.isMaster) {
     createDirectory(globals.StaticMultiCacheDir);
     createDirectory(globals.StaticWithMarkersCacheDir);
     createDirectory(globals.MarkerCacheDir);
+    createDirectory(globals.RegeneratableCacheDir);
 
     // Start cache cleaners
     new CacheCleaner(globals.TileCacheDir,

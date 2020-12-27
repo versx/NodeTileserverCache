@@ -13,3 +13,4 @@ export const StaticCacheDir = path.resolve(CacheDir, 'static');
 export const StaticMultiCacheDir = path.resolve(CacheDir, 'static-multi');
 export const StaticWithMarkersCacheDir = path.resolve(CacheDir, 'static-markers');
 export const MarkerCacheDir = path.resolve(CacheDir, 'marker');
+export const RegeneratableCacheDir = path.resolve(CacheDir, 'regeneratable');
