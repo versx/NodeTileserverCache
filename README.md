@@ -38,10 +38,12 @@
     - `GET /static/{style}/{lat}/{lon}/{zoom}/{width}/{height}/{scale}/{format}?markers=[{}]&polygons=[{}]` (StaticMap url query)
     - `POST /staticmap` (StaticMap Object in JSON Format as POST body)
     - `GET /staticmap` (SaticMap Object in URL Parameters. Markers and Polygons need to be URL-encoded)
-    - `GET /staticmap/:template` (Template Enviroment parsed from URL Parameters. Parameters ending in `json` will be parsed as json. Multiple instances of same Parameter will be parsed as array)
+    - `GET /staticmap/:template` (Template Enviroment parsed from URL Parameters. Parameters ending in `json` will be parsed as json.
+    - `GET /staticmap/pregenerated/:id` (Get image from pregenerated map. Use GET or POST to /staticmap with pregenerate=true as URL Parameter to get pregenerate the map)
 - MutliStaticMap:
     - `POST /multistaticmap` (MultiStaticMap Object in JSON Format as POST body)
-    - `GET /multistaticmap/:template` (Template Enviroment parsed from URL Parameters. Parameters ending in `json` will be parsed as json. Multiple instances of same Parameter will be parsed as array)
+    - `GET /multistaticmap/:template` (Template Enviroment parsed from URL Parameters. Parameters ending in `json` will be parsed as json.
+    - `GET /multistaticmap/pregenerated/:id` (Get image from pregenerated map. Use GET or POST to /multistaticmap with pregenerate=true as URL Parameter to get pregenerate the map)
 
 ### Style
 Get a list of styles by visiting `/styles`
@@ -50,7 +52,7 @@ Checkout https://tileserver.readthedocs.io for a guide on how to add more styles
 ### Markers  
 StaticMap route accepts an url-ecoded JSON (check bellow) on `markers` query parameter.  
 Example:  
-```JSON
+```json
 [
   {
     "url": "Marker Image URL",
@@ -68,7 +70,7 @@ Example:
 ### StaticMap
 StaticMap route accepts a StaticMap Object JSON Object as POST body:
 Example:
-```
+```json
 {
   "style": string (check available styles at /styles),
   "latitude": double,
@@ -81,14 +83,15 @@ Example:
   "bearing": double?,
   "pitch": double?,
   "markers": [Marker]?,
-  "polygons": [Geofence]?
+  "polygons": [Geofence]?,
+  "circles": [Circle]?
 }
 ```
 
 ### MultiStaticMap (WIP)
 MultiStaticMap route accepts a MultiStaticMap JSON Object as POST Body:
 Example:
-```
+```json
 {
   "grid": [
     {
@@ -124,7 +127,7 @@ Example:
 ### Marker
 Marker JSON used in StaticMap:
 Example:
-```
+```json
 {
   "url": string,
   "height": int,
@@ -139,7 +142,7 @@ Example:
 ### Polygon
 Polygon JSON used in StaticMap:
 Example:
-```
+```json
 {
   "fill_color": string (imagemagick color string),
   "stroke_color": string (imagemagick color string),
@@ -152,17 +155,36 @@ Example:
 }
 ```
 
+### Circle
+Circle JSON used in StaticMap:
+Example:
+```json
+{
+  "radius": int,
+  "latitude": double,
+  "longitude": double,
+  "fill_color": string, (imagemagick color string)
+  "stroke_color": string, (imagemagick color string)
+  "stroke_width": int
+}
+```
+
 ## Examples
 
 ### Tiles
 https://tileserverurl/tile/klokantech-basic/{z}/{x}/{y}/2/png
 
 ### StaticMap
-https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2[?markers=[]&polygons=[]]
+https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&markers=[]&polygons=[]&circles=[]
+
+### Pregenerate StaticMap
+Pregenerate: `GET https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&pregenerate=true`  
+Returns: `id`  
+View: `GET https://tileserverurl/staticmap/pregenerated/{id}`  
 
 ### StaticMap with Markers
 `POST https://tileserverurl/staticmap`
-```JSON
+```json
 {
     "style": "klokantech-basic",
     "latitude": 47.263416,
@@ -186,7 +208,7 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
 
 ### MultiStaticMap
 `POST https://tileserverurl/multistaticmap`
-```JSON
+```json
 {
     "grid": [
         {
@@ -268,21 +290,21 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
 ![multistaticmap response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/multistaticmap.png)
 
 ### StaticMap using Templates
-`pokemon.json` file in `Templates` directory (uses [Mustache](https://mustache.github.io) as TemplatingEngine):
-```
+`pokemon.json` file in `Templates` directory (uses [EJS](https://ejs.co/) as Templating Engine):
+```json
 {
     "style": "klokantech-basic",
-    "latitude": {{lat}},
-    "longitude": {{lon}},
+    "latitude": <%= lat %>,
+    "longitude": <%= lon %>,
     "zoom": 15,
     "width": 500,
     "height": 250,
     "scale": 1,
     "markers": [
         {
-            "url": "https://rdmurl/static/img/pokemon/{{id}}{{#form}}-{{form}}{{/form}}.png",
-            "latitude": {{lat}},
-            "longitude": {{lon}},
+            "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
+            "latitude": <%= lat %>,
+            "longitude": <%= lon %>,
             "width": 50,
             "height": 50
         }
@@ -294,8 +316,6 @@ https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longit
 
 ## TODO
 - Pass through `.env` config to `docker-compose.yml` environment section
-- Fix combineImagesGrid  
-- Cleanup code  
 
 ## Credits  
 - [SwiftTileserverCache](https://github.com/123FLO321/SwiftTileserverCache)  
