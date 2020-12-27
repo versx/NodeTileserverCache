@@ -143,7 +143,7 @@ export class RouteController {
         const template = new Template(name);
         const templateData = await template.render(req.query);
         const tplObj = JSON.parse(templateData);
-        const staticMap: StaticMap = Object.assign(new StaticMap(null), tplObj);
+        const staticMap = new StaticMap(tplObj);
         //console.debug('Template StaticMap:', staticMap);
 
         let fileName: string;
@@ -166,7 +166,7 @@ export class RouteController {
         const template = new Template(name);
         const templateData = await template.render(req.body);
         const tplObj = JSON.parse(templateData);
-        const staticMap: StaticMap = Object.assign(new StaticMap({}), tplObj);
+        const staticMap = new StaticMap(tplObj);
         //console.debug('Template StaticMap:', staticMap);
 
         let fileName: string;
@@ -295,6 +295,7 @@ export class RouteController {
         const fileData = fs.readFileSync(regenFileName, { encoding: 'utf8' });
         const obj = JSON.parse(fileData);
         const multiStaticMap: MultiStaticMap = Object.assign(new MultiStaticMap(), obj);
+        multiStaticMap.regeneratable = false;
 
         let fileName: string;
         try {

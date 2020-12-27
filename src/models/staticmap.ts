@@ -2,7 +2,6 @@
 
 import path from 'path';
 
-import { Drawable } from '../interfaces/drawable';
 import { Circle } from './circle';
 import { HitStats } from './hit-stats';
 import { Marker } from './marker';
@@ -27,6 +26,8 @@ export class StaticMap {
     public markers?: Marker[] = [];
     public polygons?: Polygon[] = [];
     public circles?: Circle[] = [];
+
+    public hash: string;
 
     public regeneratable = false;
 
@@ -58,6 +59,7 @@ export class StaticMap {
             this.circles = Circle.parse(args?.circles?.toString());
         }
         this.regeneratable = args?.regeneratable !== undefined && args?.regeneratable !== false;
+        this.hash = 'SM' + utils.getHashCode(this);
     }
 
     public async generate(): Promise<string> {
@@ -78,32 +80,14 @@ export class StaticMap {
             HitStats.staticHit(this.style, true);
         }
 
-        const drawables: Array<Drawable> = [];
-        if (this.polygons && this.polygons.length > 0) {
-            this.polygons.forEach((polygon: Polygon) => drawables.push(polygon));
-        }
-        if (this.circles && this.circles.length > 0) {
-            this.circles.forEach((circle: Circle) => drawables.push(circle));
-        }
-        if (this.markers && this.markers.length > 0) {
-            this.markers.forEach((marker: Marker) => drawables.push(marker));
-        }
-
+        // If regeneratable staticmap, store for later use
         if (this.regeneratable) {
             const id = await utils.storeRegenerable<StaticMap>(this);
             return id;
         }
 
-        //console.debug('Drawable Objects:', drawables);
-        if (drawables.length === 0) {
-            // Serve static file without any drawable objects
-            return fileName;
-        }
-
         // Hash all of the hashStrings for smaller filenames
-        const hashes = utils.getHashCode(drawables.map(drawable => drawable.hash).join(','));
-        //console.debug('hashes:', hashes);
-        const fileNameWithMarker = path.resolve(globals.StaticWithMarkersCacheDir, `${this.style}-${this.latitude}-${this.longitude}-${this.zoom}-${this.width}-${this.height}-${hashes}-${this.scale}.${this.format}`);
+        const fileNameWithMarker = path.resolve(globals.StaticWithMarkersCacheDir, `${this.hash}.${this.format}`);
         if (await utils.fileExists(fileNameWithMarker)) {
             // Static with marker file exists, touch for last modified timestamp.
             await utils.touch(fileName);
