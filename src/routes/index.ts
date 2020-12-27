@@ -308,7 +308,7 @@ export class RouteController {
     }
 }
 
-const sendResponse = (res: Response, path: string, setCacheControl: Boolean = true, regeneratable: Boolean = false): void => {
+const sendResponse = (res: Response, path: string, setCacheControl = true, regeneratable = false): void => {
     if (setCacheControl && !regeneratable) {
         res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     }

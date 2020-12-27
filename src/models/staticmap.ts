@@ -1,7 +1,6 @@
 'use strict';
 
 import path from 'path';
-import * as fs from 'fs';
 
 import { Drawable } from '../interfaces/drawable';
 import { Circle } from './circle';
@@ -29,7 +28,7 @@ export class StaticMap {
     public polygons?: Polygon[] = [];
     public circles?: Circle[] = [];
 
-    public regeneratable: Boolean = false;
+    public regeneratable = false;
 
     /* eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types */
     constructor(args: any) {

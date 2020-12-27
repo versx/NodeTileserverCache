@@ -13,9 +13,9 @@ const imagemagick = new ImageMagick();
 export class MultiStaticMap implements Drawable {
     public grid: DirectionedMultiStaticMap[];
     public hash: string;
-    public regeneratable: Boolean = false;
+    public regeneratable = false;
 
-    constructor(grid: DirectionedMultiStaticMap[] = [], regeneratable: Boolean = false) {
+    constructor(grid: DirectionedMultiStaticMap[] = [], regeneratable = false) {
         this.grid = grid;
         this.hash = 'MS' + utils.getHashCode(this);
         this.regeneratable = regeneratable !== undefined && regeneratable !== false;
