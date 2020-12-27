@@ -1,3 +1,7 @@
+![ts](https://badgen.net/badge/Built%20With/TypeScript/blue)
+[![GitHub Release](https://img.shields.io/github/release/versx/NodeTileserverCache.svg)](https://github.com/versx/NodeTileserverCache/releases/)
+[![GitHub Contributors](https://img.shields.io/github/contributors/versx/NodeTileserverCache.svg)](https://github.com/versx/NodeTileserverCache/graphs/contributors/)
+[![Discord](https://img.shields.io/discord/552003258000998401.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/zZ9h9Xa)  
 # NodeTileserverCache
 
 ## Installing
