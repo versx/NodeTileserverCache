@@ -7,9 +7,10 @@ export const ValidFormats = [ 'png', 'jpg' ];
 export const TemplatesDir = path.resolve(__dirname, '../../templates');
 
 // Cache directory paths
-export const CacheDir = path.resolve(__dirname, '../../Cache');
-export const TileCacheDir = path.resolve(CacheDir, 'Tile');
-export const StaticCacheDir = path.resolve(CacheDir, 'Static');
-export const StaticMultiCacheDir = path.resolve(CacheDir, 'StaticMulti');
-export const StaticWithMarkersCacheDir = path.resolve(CacheDir, 'StaticWithMarkers');
-export const MarkerCacheDir = path.resolve(CacheDir, 'Marker');
+export const CacheDir = path.resolve(__dirname, '../../cache');
+export const TileCacheDir = path.resolve(CacheDir, 'tile');
+export const StaticCacheDir = path.resolve(CacheDir, 'static');
+export const StaticMultiCacheDir = path.resolve(CacheDir, 'static-multi');
+export const StaticWithMarkersCacheDir = path.resolve(CacheDir, 'static-markers');
+export const MarkerCacheDir = path.resolve(CacheDir, 'marker');
+export const RegeneratableCacheDir = path.resolve(CacheDir, 'regeneratable');

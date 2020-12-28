@@ -4,7 +4,7 @@ import express from 'express';
 const app = express();
 import path from 'path';
 
-import * as routes from './routes/index';
+import { RouteController } from './routes/index';
 
 // Static paths
 app.use(express.static(path.resolve(__dirname, '../static')));
@@ -13,23 +13,27 @@ app.use(express.static(path.resolve(__dirname, '../static')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
+// Template engine
 app.set('view engine', 'ejs');
 app.set('views', path.resolve(__dirname, 'views'));
 
 // Routing endpoints
-app.get('/', routes.getRoot);
-app.get('/styles', routes.getStyles);
+const router = new RouteController();
+app.get('/', router.getRoot);
+app.get('/styles', router.getStyles);
 
-app.get('/tile/:style/:z/:x/:y/:scale/:format', async (req, res) => await routes.getTile(req, res));
-app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', async (req, res) => await routes.getStatic(req, res));
+app.get('/tile/:style/:z/:x/:y/:scale/:format', router.getTile);
+app.get('/static/:style/:lat/:lon/:zoom/:width/:height/:scale/:format', router.getStatic);
 
-app.get('/staticmap/:template', routes.getStaticMapTemplate);
-app.post('/staticmap/:template', routes.postStaticMapTemplate);
+app.get('/staticmap/:template', router.getStaticMapTemplate);
+app.post('/staticmap/:template', router.postStaticMapTemplate);
 
-app.get('/staticmap', routes.getStaticMap);
-app.post('/staticmap', routes.postStaticMap);
+app.get('/staticmap', router.getStaticMap);
+app.post('/staticmap', router.postStaticMap);
+app.get('/staticmap/pregenerated/:id', router.getPregeneratedStaticMap);
 
-app.get('/multistaticmap/:template', routes.getMultiStaticMapTemplate);
-app.post('/multistaticmap', routes.postMultiStaticMap);
+app.get('/multistaticmap/:template', router.getMultiStaticMapTemplate);
+app.post('/multistaticmap', router.postMultiStaticMap);
+app.get('/multistaticmap/pregenerated/:id', router.getPregeneratedMultiStaticMap);
 
 export default app;

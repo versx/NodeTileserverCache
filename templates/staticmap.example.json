@@ -6,13 +6,29 @@
     "width": 500,
     "height": 250,
     "scale": 1,
-    "markers": [
-        {
-            "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
-            "latitude": <%= lat %>,
-            "longitude": <%= lon %>,
-            "width": 50,
-            "height": 50
-        }
-    ]
+    "markers": [{
+        "url": "https://raw.githubusercontent.com/nileplumb/PkmnHomeIcons/ICONS/ICONS/misc/grass.png",
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "x_offset": 0,
+        "y_offset": 0,
+        "width": 48,
+        "height": 48
+    },{
+        "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "x_offset": 0,
+        "y_offset": 0,
+        "width": 32,
+        "height": 32
+    }],
+    "circles": [{
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "radius": 25,
+        "fill_color": "rgba(100.0%, 100.0%, 100.0%, 0.5)",
+        "stroke_color": "rgb(45, 45, 45)",
+        "stroke_width": 1
+    }]
 }

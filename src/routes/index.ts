@@ -1,118 +1,105 @@
 'use strict';
 
+import * as fs from 'fs';
 import path from 'path';
 import { Request, Response } from 'express';
 
 import * as globals from '../data/globals';
-import { Marker } from '../models/marker';
+import { HitStatistics } from '../interfaces/hit-statistics';
+import { HitStats } from '../models/hit-stats';
 import { MultiStaticMap } from '../models/multi-staticmap';
-import { Polygon } from '../models/polygon';
 import { StaticMap } from '../models/staticmap';
-import { HitStats } from '../services/stats';
 import { Template } from '../services/template';
 import * as utils from '../services/utils';
 
 /**
- * GET /
+ * Route controller class
  */
-export const getRoot = (req: Request, res: Response): void => {
-    const tileHitKeys = Object.keys(HitStats.tileHitRatio);
-    const tileHits: HitStatistics[] = [];
-    if (tileHitKeys) {
-        tileHitKeys.forEach((key: string) => {
-            const style = HitStats.tileHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
+export class RouteController {
+    /**
+     * GET /
+     */
+    getRoot(req: Request, res: Response): void {
+        const tileHits: HitStatistics[] = [];
+        for (const style in HitStats.tileHitRatio) {
+            const stats = HitStats.tileHitRatio[style];
+            const total = stats.miss + stats.hit;
             tileHits.push({
-                style: key,
-                hit,
+                style,
+                hit: stats.hit,
                 total,
-                percentage
+                percentage: Math.round(stats.hit / total * 100)
             });
-        });
-    }
-    const staticHitKeys = Object.keys(HitStats.staticHitRatio);
-    const staticHits: HitStatistics[] = [];
-    if (staticHitKeys) {
-        staticHitKeys.forEach((key: string) => {
-            const style = HitStats.staticHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
+        }
+        const staticHits: HitStatistics[] = [];
+        for (const style in HitStats.staticHitRatio) {
+            const stats = HitStats.staticHitRatio[style];
+            const total = stats.miss + stats.hit;
             staticHits.push({
-                style: key,
-                hit,
+                style,
+                hit: stats.hit,
                 total,
-                percentage
+                percentage: Math.round(stats.hit / total * 100)
             });
-        });
-    }
-    const staticMarkerHitKeys = Object.keys(HitStats.staticMarkerHitRatio);
-    const staticMarkerHits: HitStatistics[] = [];
-    if (staticMarkerHitKeys) {
-        staticMarkerHitKeys.forEach((key: string) => {
-            const style = HitStats.staticMarkerHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
+        }
+        const staticMarkerHits: HitStatistics[] = [];
+        for (const style in HitStats.staticMarkerHitRatio) {
+            const stats = HitStats.staticMarkerHitRatio[style];
+            const total = stats.miss + stats.hit;
             staticMarkerHits.push({
-                style: key,
-                hit,
+                style,
+                hit: stats.hit,
                 total,
-                percentage
+                percentage: Math.round(stats.hit / total * 100)
             });
-        });
-    }
-    const markerHitKeys = Object.keys(HitStats.markerHitRatio);
-    const markerHits: HitStatistics[] = [];
-    if (markerHitKeys) {
-        markerHitKeys.forEach((key: string) => {
-            const style = HitStats.markerHitRatio[key];
-            const hit = style.hit;
-            const total = style.miss + style.hit;
-            const percentage = Math.round(hit / total * 100);
+        }
+        const markerHits: HitStatistics[] = [];
+        for (const style in HitStats.markerHitRatio) {
+            const stats = HitStats.markerHitRatio[style];
+            const total = stats.miss + stats.hit;
             markerHits.push({
-                style: key,
-                hit,
+                style,
+                hit: stats.hit,
                 total,
-                percentage
+                percentage: Math.round(stats.hit / total * 100)
             });
-        });
+        }
+        const data = {
+            tileHits,
+            staticHits,
+            staticMarkerHits,
+            markerHits,
+        };
+        res.render('stats', data);
     }
-    res.render('stats', {
-        tileHits,
-        staticHits,
-        staticMarkerHits,
-        markerHits,
-    });
-    //res.send(html);
-};
 
-/**
- * GET /styles
- */
-export const getStyles = async (req: Request, res: Response): Promise<void> => {
-    const url = process.env.TILE_SERVER_URL + '/styles.json';
-    const data = await utils.getData(url);
-    // TODO: Use styles model/interface instead of Record<string, unknown>
-    //const list = obj.map((x: Record<string, unknown>) => x.id);
-    res.json(data);
-};
+    /**
+     * GET /styles
+     */
+    async getStyles(req: Request, res: Response): Promise<void> {
+        const url = `${process.env.TILE_SERVER_URL}/styles.json`;
+        const data = await utils.getData(url);
+        // TODO: Use styles model/interface instead of Record<string, unknown>
+        //const list = obj.map((x: Record<string, unknown>) => x.id);
+        res.json(data);
+    }
 
-/**
- * GET /tile
- */
-export const getTile = async (req: Request, res: Response): Promise<void> => {
-    //console.debug('Tile:', req.params);
-    const style = req.params.style;
-    const z = parseInt(req.params.z);
-    const x = parseFloat(req.params.x);
-    const y = parseFloat(req.params.y);
-    const scale = parseInt(req.params.scale);
-    const format = req.params.format;
-    const fileName = path.resolve(globals.TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
-    if (scale >= 1 && globals.ValidFormats.includes(format)) {
+    /**
+     * GET /tile
+     */
+    async getTile(req: Request, res: Response): Promise<void> {
+        //console.debug('Tile:', req.params);
+        const style = req.params.style;
+        const z = parseInt(req.params.z);
+        const x = parseFloat(req.params.x);
+        const y = parseFloat(req.params.y);
+        const scale = parseInt(req.params.scale);
+        const format = req.params.format;
+        const fileName = path.resolve(globals.TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
+        if (!scale || scale <= 0 || !globals.ValidFormats.includes(format)) {
+            // Failed
+            return sendErrorResponse(res, 'Error'); // Bad request
+        }
         if (await utils.fileExists(fileName)) {
             await utils.touch(fileName);
             HitStats.tileHit(style, false);
@@ -122,271 +109,225 @@ export const getTile = async (req: Request, res: Response): Promise<void> => {
             await utils.downloadFile(tileUrl, fileName);
             HitStats.tileHit(style, true);
         }
-    } else {
-        // Failed
-        res.send('Error'); // Bad request
+        console.info(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
+        sendResponse(res, fileName);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Tile: ${style}-${z}-${x}-${y}-${scale}.${format}`);
-    res.sendFile(fileName, (error: Error) => {
-        if (error) {
-            console.error('Failed to serve tile:', error);
-            return;
+    //http://127.0.0.1:43200/static/klokantech-basic/8.68641/47.52305/15/300/175/1/png?markers=[{"url":"https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8","height":32,"width":32,"x_offset":0,"y_offset":0,"latitude":47.52305,"longitude":8.686411}]&polygons=[{"fill_color":"rgba(100.0%,0.0%,0.0%,0.5)","stroke_color":"black","stroke_width":1,"path":"[[8.685018,47.523804],[8.685686,47.522246],[8.687436,47.522314],[8.686919,47.523887],[8.685018,47.523804]]"}]
+    //http://127.0.0.1:43200/static/klokantech-basic/47.52305/8.68641/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.52305,%22longitude%22:8.686411}]&polygons=[{%22fill_color%22:%22rgba(100.0%,0.0%,0.0%,0.5)%22,%22stroke_color%22:%22black%22,%22stroke_width%22:1,%22path%22:%22[[47.523804,8.685018],[47.522246,8.685686],[47.522314,8.687436],[47.523887,8.686919],[47.523804,8.685018]]%22}]
+    /**
+     * GET /static
+     */
+    async getStatic(req: Request, res: Response): Promise<void> {
+        //console.debug('Static:', req.params);
+        const staticMap = new StaticMap(Object.assign(req.params, req.query));
+        //console.debug('Static map:', staticMap);
+
+        let fileName: string;
+        try {
+            fileName = await staticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate staticmap:', e);
+            return sendErrorResponse(res, e);
         }
-    });
-
-    console.debug('Tile:', HitStats.tileHitRatio);
-};
-
-//http://10.0.0.2:43200/static/klokantech-basic/34.01/-117.01/15/300/175/1/png
-//http://tiles.example.com:8080/static/klokantech-basic/{0}/{1}/15/300/175/1/png
-//http://10.0.0.2:43200/static/basic-preview/47.404041/8.539621/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.404041,%22longitude%22:8.539621}]
-//http://10.0.1.55:43200/static/klokantech-basic/8.68641/47.52305/15/300/175/1/png?markers=[{"url":"https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8","height":32,"width":32,"x_offset":0,"y_offset":0,"latitude":47.52305,"longitude":8.686411}]&polygons=[{"fill_color":"rgba(100.0%,0.0%,0.0%,0.5)","stroke_color":"black","stroke_width":1,"path":"[[8.685018,47.523804],[8.685686,47.522246],[8.687436,47.522314],[8.686919,47.523887],[8.685018,47.523804]]"}]
-//http://127.0.0.1:43200/static/klokantech-basic/47.52305/8.68641/15/300/175/1/png?markers=[{%22url%22:%22https://s.gravatar.com/avatar/c492b68b9ec45b29d257bd8a57ffc7f8%22,%22height%22:32,%22width%22:32,%22x_offset%22:0,%22y_offset%22:0,%22latitude%22:47.52305,%22longitude%22:8.686411}]&polygons=[{%22fill_color%22:%22rgba(100.0%,0.0%,0.0%,0.5)%22,%22stroke_color%22:%22black%22,%22stroke_width%22:1,%22path%22:%22[[47.523804,8.685018],[47.522246,8.685686],[47.522314,8.687436],[47.523887,8.686919],[47.523804,8.685018]]%22}]
-/**
- * GET /static
- */
-export const getStatic = async (req: Request, res: Response): Promise<void> => {
-    //console.debug('Static:', req.params);
-    const style = req.params.style;
-    const lat = parseFloat(req.params.lat);
-    const lon = parseFloat(req.params.lon);
-    const zoom = parseInt(req.params.zoom);
-    const width = parseInt(req.params.width);
-    const height = parseInt(req.params.height);
-    const scale = parseInt(req.params.scale);
-    const format = req.params.format;
-    const bearing = parseInt(req.params.bearing || '0');
-    const pitch = parseInt(req.params.pitch || '0');
-    const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
-    const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
-    const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.debug('Static map:', staticMap);
-
-    let fileName: string;
-    try {
-        fileName = await staticMap.generate();
-    } catch (e) {
-        console.error('Failed to generate staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        console.info(`Serving Static: ${fileName}`);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
+    /**
+     * GET /staticmap/:template
+     */
+    //http://127.0.0.1:43200/staticmap/staticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
+    async getStaticMapTemplate(req: Request, res: Response): Promise<void> {
+        const name = req.params.template;
+        const template = new Template(name);
+        const templateData = await template.render(req.query);
+        const tplObj = JSON.parse(templateData);
+        const staticMap = new StaticMap(tplObj);
+        //console.debug('Template StaticMap:', staticMap);
+
+        let fileName: string;
+        try {
+            fileName = await staticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate staticmap from template:', e);
+            return sendErrorResponse(res, e);
         }
-    });
-
-    console.debug('Static:', HitStats.staticHitRatio, 'Static Marker:', HitStats.staticMarkerHitRatio);
-};
-
-/**
- * GET /staticmap/:template
- */
-//http://127.0.0.1:43200/staticmap/staticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
-export const getStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
-    const name = req.params.template;
-    const template = await Template.render(name, req.query);
-    const tplObj = JSON.parse(template);
-    const staticMap = Object.assign(new StaticMap(), tplObj);
-    //console.debug('Template StaticMap:', staticMap);
-
-    let fileName: string;
-    try {
-        fileName = await staticMap.generate();
-    } catch (e) {
-        console.error('Failed to generate staticmap from template:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        console.info(`Serving Static: ${fileName}`);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
+    /**
+     * POST /staticmap/:template
+     */
+    //http://127.0.0.1:43200/staticmap/staticmap.example.json
+    async postStaticMapTemplate(req: Request, res: Response): Promise<void> {
+        const name = req.params.template;
+        const template = new Template(name);
+        const templateData = await template.render(req.body);
+        const tplObj = JSON.parse(templateData);
+        const staticMap = new StaticMap(tplObj);
+        //console.debug('Template StaticMap:', staticMap);
+
+        let fileName: string;
+        try {
+            fileName = await staticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate staticmap from template:', e);
+            return sendErrorResponse(res, e);
         }
-    });
-};
-
-/**
- * POST /staticmap/:template
- */
-//http://127.0.0.1:43200/staticmap/staticmap.example.json
-export const postStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
-    const name = req.params.template;
-    const template = await Template.render(name, req.body);
-    const tplObj = JSON.parse(template);
-    const staticMap = Object.assign(new StaticMap(), tplObj);
-    //console.debug('Template StaticMap:', staticMap);
-
-    let fileName: string;
-    try {
-        fileName = await staticMap.generate();
-    } catch (e) {
-        console.error('Failed to generate staticmap from template:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        console.info(`Serving Static: ${fileName}`);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
+    /**
+     * GET /staticmap
+     */
+    //http://127.0.0.1:43200/staticmap?style=dark-matter&latitude=34.01&longitude=-117.01&width=300&height=175&scale=1&format=png
+    async getStaticMap(req: Request, res: Response): Promise<void> {
+        const staticMap = new StaticMap(req.query);
+        //console.debug('Static map:', staticMap);
+
+        let fileName: string;
+        try {
+            fileName = await staticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate staticmap:', e);
+            return sendErrorResponse(res, e);
         }
-    });
-};
-
-/**
- * GET /staticmap
- */
-export const getStaticMap = async (req: Request, res: Response): Promise<void> => {
-    const style = req.query.style?.toString();
-    const lat = parseFloat(req.query.latitude?.toString() || req.query.lat?.toString());
-    const lon = parseFloat(req.query.longitude?.toString() || req.query.lon?.toString());
-    const zoom = parseInt(req.query.zoom?.toString());
-    const width = parseInt(req.query.width?.toString());
-    const height = parseInt(req.query.height?.toString());
-    const scale = parseInt(req.query.scale?.toString());
-    const format = req.query.format?.toString() || 'png';
-    const bearing = parseInt(req.query.bearing?.toString() || '0');
-    const pitch = parseInt(req.query.pitch?.toString() || '0');
-    const polygons: Polygon[] = Polygon.parse(req.query.polygons?.toString() || '');
-    const markers: Marker[] = Marker.parse(req.query.markers?.toString() || '');
-    const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.debug('Static map:', staticMap);
-
-    let fileName: string;
-    try {
-        fileName = await staticMap.generate();
-    } catch (e) {
-        console.error('Failed to generate staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        console.info(`Serving Static: ${fileName}`);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
+    /**
+     * POST /staticmap
+     */
+    async postStaticMap(req: Request, res: Response): Promise<void> {
+        const staticMap = new StaticMap(req.body);
+        //console.debug('Static map:', staticMap);
+
+        let fileName: string;
+        try {
+            fileName = await staticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate staticmap:', e);
+            return sendErrorResponse(res, e);
         }
-    });
-};
-
-/**
- * POST /staticmap
- */
-export const postStaticMap = async (req: Request, res: Response): Promise<void> => {
-    const style = req.body.style;
-    const lat = parseFloat(req.body.latitude || req.body.lat);
-    const lon = parseFloat(req.body.longitude || req.body.lon);
-    const zoom = parseInt(req.body.zoom);
-    const width = parseInt(req.body.width);
-    const height = parseInt(req.body.height);
-    const scale = parseInt(req.body.scale);
-    const format = req.body.format || 'png';
-    const bearing = parseInt(req.body.bearing || '0');
-    const pitch = parseInt(req.body.pitch || '0');
-    const polygons: Polygon[] = Polygon.parse(req.body.polygons);
-    const markers: Marker[] = Marker.parse(req.body.markers);
-    const staticMap = new StaticMap(style, lat, lon, zoom, width, height, scale, format, bearing, pitch, markers, polygons);
-    //console.debug('Static map:', staticMap);
-
-    let fileName: string;
-    try {
-        fileName = await staticMap.generate();
-    } catch (e) {
-        console.error('Failed to generate staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        console.info(`Serving Static: ${fileName}`);
+        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving Static: ${style}-${lat}-${lon}-${zoom}-${width}-${height}-${scale}.${format}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
+    /**
+     * GET /static/pregenerated/:id
+     */
+    async getPregeneratedStaticMap(req: Request, res: Response): Promise<void> {
+        const id = req.params.id;
+        const regenFileName = path.resolve(globals.RegeneratableCacheDir, id) + '.json';
+        if (!await utils.fileExists(regenFileName)) {
+            return sendErrorResponse(res, 'Pregenerated staticmap does not exist with id: ' + id);
         }
-    });
-};
+        const fileData = fs.readFileSync(regenFileName, { encoding: 'utf8' });
+        const obj = JSON.parse(fileData);
+        const staticMap = new StaticMap(obj);
+        staticMap.regeneratable = false;
 
-/**
- * GET /multistaticmap/:template
- */
-//http://127.0.0.1:43200/multistaticmap/multistaticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
-export const getMultiStaticMapTemplate = async (req: Request, res: Response): Promise<void> => {
-    const name = req.params.template;
-    const template = await Template.render(name, req.query);
-    const tplObj = JSON.parse(template);
-    const multiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
-    //console.debug('MultiStaticMap:', multiStaticMap);
-
-    let fileName: string;
-    try {
-        fileName = await multiStaticMap.generate();
-    } catch (e) {
-        console.error('Failed to generate multi staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        let fileName: string;
+        try {
+            fileName = await staticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate pregenerated staticmap:', e);
+            return sendErrorResponse(res, e);
+        }
+        console.info(`Serving Pregenerated Static: ${fileName}`);
+        sendResponse(res, fileName);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving MultiStatic: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
-        }
-    });
-};
+    /**
+     * GET /multistaticmap/:template
+     */
+    //http://127.0.0.1:43200/multistaticmap/multistaticmap.example.json?lat=34.01&lon=-117.01&id=131&form=00
+    async getMultiStaticMapTemplate(req: Request, res: Response): Promise<void> {
+        const name = req.params.template;
+        const template = new Template(name);
+        const templateData = await template.render(req.query);
+        const tplObj = JSON.parse(templateData);
+        const multiStaticMap: MultiStaticMap = Object.assign(new MultiStaticMap(), tplObj);
+        //console.debug('MultiStaticMap:', multiStaticMap);
 
-/**
- * POST /multistaticmap
- */
-export const postMultiStaticMap = async (req: Request, res: Response): Promise<void> => {
-    let fileName: string;
-    try {
-        const grid = req.body.grid;
-        const multiStaticMap = new MultiStaticMap(grid);
-        console.debug('Multi Static map:', multiStaticMap);
-        fileName = await multiStaticMap.generate();
-    } catch (e) {
-        console.error('Failed to generate multi staticmap:', e);
-        return res.send(e)
-            .status(405)
-            .end();
+        let fileName: string;
+        try {
+            fileName = await multiStaticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate multi staticmap:', e);
+            return sendErrorResponse(res, e);
+        }
+        console.info(`Serving MultiStatic: ${fileName}`);
+        sendResponse(res, fileName);
     }
 
-    res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
-    console.info(`Serving MultiStatic: ${fileName}`);
-    res.sendFile(fileName, (err: Error) => {
-        if (err) {
-            console.error('Failed to send static file:', err);
-            return;
+    /**
+     * POST /multistaticmap
+     */
+    async postMultiStaticMap(req: Request, res: Response): Promise<void> {
+        let fileName: string;
+        try {
+            const grid = req.body.grid;
+            const multiStaticMap = new MultiStaticMap(grid);
+            //console.debug('Multi Static map:', multiStaticMap);
+            fileName = await multiStaticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate multi staticmap:', e);
+            return sendErrorResponse(res, e);
         }
-    });
-};
+        console.info(`Serving MultiStatic: ${fileName}`);
+        sendResponse(res, fileName);
+    }
 
-interface HitStatistics {
-    style: string;
-    hit: number;
-    total: number;
-    percentage: number;
+    /**
+     * GET /multistaticmap/pregenerated/:id
+     */
+    async getPregeneratedMultiStaticMap(req: Request, res: Response): Promise<void> {
+        const id = req.params.id;
+        const regenFileName = path.resolve(globals.StaticMultiCacheDir, id) + '.json';
+        if (!await utils.fileExists(regenFileName)) {
+            return sendErrorResponse(res, 'Pregenerated multi staticmap does not exist with id: ' + id);
+        }
+        const fileData = fs.readFileSync(regenFileName, { encoding: 'utf8' });
+        const obj = JSON.parse(fileData);
+        const multiStaticMap: MultiStaticMap = Object.assign(new MultiStaticMap(), obj);
+        multiStaticMap.regeneratable = false;
+
+        let fileName: string;
+        try {
+            fileName = await multiStaticMap.generate();
+        } catch (e) {
+            console.error('Failed to generate pregenerated multi staticmap:', e);
+            return sendErrorResponse(res, e);
+        }
+        console.info(`Serving Pregenerated Multi Static: ${fileName}`);
+        sendResponse(res, fileName);
+    }
 }
+
+const sendResponse = (res: Response, path: string, setCacheControl = true, regeneratable = false): void => {
+    if (setCacheControl && !regeneratable) {
+        res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
+    }
+    if (regeneratable) {
+        res.setHeader('content-type', 'text/html');
+        res.send(path);
+    } else {
+        res.sendFile(path, (err: Error) => {
+            if (err) {
+                console.error('Failed to send static file:', err);
+                return;
+            }
+        });
+    }
+};
+
+const sendErrorResponse = (res: Response, err: any): void => {
+    return res.send(err)
+        .status(405)
+        .end();
+};

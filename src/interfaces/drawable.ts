@@ -1,5 +1,5 @@
 'use strict';
 
 export interface Drawable {
-    hashString: string;
+    hash: string;
 }
