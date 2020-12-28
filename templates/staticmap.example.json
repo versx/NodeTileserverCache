@@ -15,7 +15,7 @@
         "width": 48,
         "height": 48
     },{
-        "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
+        "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form && form !== 0) { %>-f<%= form %><% } %>.png",
         "latitude": <%= lat %>,
         "longitude": <%= lon %>,
         "x_offset": 0,
