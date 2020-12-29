@@ -8,6 +8,7 @@ import { exec } from './spawn';
 import { CombineDirection } from '../data/combine-direction';
 import * as globals from '../data/globals';
 import { Grid } from '../interfaces/grid';
+import { Point } from '../interfaces/point';
 import { Coordinate } from '../models/coordinate';
 import { HitStats } from '../models/hit-stats';
 import { StaticMap } from '../models/staticmap';
@@ -83,7 +84,7 @@ export class ImageMagick {
                 const point = this.getRealOffset(polygonCoord, staticmapCoord, staticmap.zoom, staticmap.scale);
                 points.push({
                     x: point.x + Number(staticmap.width / 2 * staticmap.scale),
-                    y: point.y + Number(staticmap.height / 2 * staticmap.scale)
+                    y: point.y + Number(staticmap.height / 2 * staticmap.scale),
                 });
             }
             
@@ -95,7 +96,7 @@ export class ImageMagick {
                 '-fill', polygon.fill_color,
                 '-stroke', polygon.stroke_color,
                 '-gravity', 'Center',
-                '-draw', `polygon ${polygonPath}`
+                '-draw', `polygon ${polygonPath}`,
             ]);
         }
         const circleArgs: string[][] = [];
@@ -122,7 +123,7 @@ export class ImageMagick {
                 '-fill', circle.fill_color,
                 '-stroke', circle.stroke_color,
                 '-gravity', 'Center',
-                '-draw', `circle ${x},${y} ${x - circle.radius},${y + circle.radius}`
+                '-draw', `circle ${x},${y} ${x - circle.radius},${y + circle.radius}`,
             ]);
         }
         polygonArgs.forEach(x => args = args.concat(x));
@@ -192,9 +193,4 @@ export class ImageMagick {
             y: realOffsetY + extraY * scale,
         };
     }
-}
-
-interface Point {
-    x: number;
-    y: number;
 }

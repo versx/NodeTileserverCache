@@ -9,6 +9,7 @@ import { HitStatistics } from '../interfaces/hit-statistics';
 import { HitStats } from '../models/hit-stats';
 import { MultiStaticMap } from '../models/multi-staticmap';
 import { StaticMap } from '../models/staticmap';
+import { Style } from '../models/style';
 import { Template } from '../services/template';
 import * as utils from '../services/utils';
 
@@ -19,7 +20,7 @@ export class RouteController {
     /**
      * GET /
      */
-    getRoot(req: Request, res: Response): void {
+    async getRoot(req: Request, res: Response): Promise<void> {
         const tileHits: HitStatistics[] = [];
         for (const style in HitStats.tileHitRatio) {
             const stats = HitStats.tileHitRatio[style];
@@ -64,7 +65,10 @@ export class RouteController {
                 percentage: Math.round(stats.hit / total * 100)
             });
         }
+        const url = `${process.env.TILE_SERVER_URL}/styles.json`;
+        const styles = await utils.getData(url);
         const data = {
+            styles,
             tileHits,
             staticHits,
             staticMarkerHits,
@@ -79,9 +83,10 @@ export class RouteController {
     async getStyles(req: Request, res: Response): Promise<void> {
         const url = `${process.env.TILE_SERVER_URL}/styles.json`;
         const data = await utils.getData(url);
+        const styles = Object.assign(new Array<Style>(), data);
         // TODO: Use styles model/interface instead of Record<string, unknown>
         //const list = obj.map((x: Record<string, unknown>) => x.id);
-        res.json(data);
+        res.json(styles);
     }
 
     /**
