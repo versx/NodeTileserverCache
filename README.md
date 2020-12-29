@@ -164,11 +164,12 @@ Circle JSON used in StaticMap:
 Example:
 ```json
 {
-  "text": string,
+  "radius": int,
+  "latitude": double,
+  "longitude": double,
   "fill_color": string, (imagemagick color string)
-  "size": number,
-  "location": string, (imagemagick position keyword)
-  "font": string (available font on system)
+  "stroke_color": string, (imagemagick color string)
+  "stroke_width": int
 }
 ```
 
@@ -177,12 +178,11 @@ Watermark JSON used in StaticMap:
 Example:
 ```json
 {
-  "radius": int,
-  "latitude": double,
-  "longitude": double,
+  "text": string,
   "fill_color": string, (imagemagick color string)
-  "stroke_color": string, (imagemagick color string)
-  "stroke_width": int
+  "size": number,
+  "location": string, (imagemagick position keyword)
+  "font": string (available font on system)
 }
 ```
 
