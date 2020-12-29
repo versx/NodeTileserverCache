@@ -45,7 +45,6 @@ export const md5 = (data: string): string => {
     return hash;
 };
 
-// TODO: Review unknown (any value) or Record<string, unknown> (any object)
 export const getHashCode = (obj: unknown): string => {
     const json = JSON.stringify(obj);
     const base64 = btoa(json).replace('/', '_');

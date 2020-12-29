@@ -88,7 +88,8 @@ Example:
   "pitch": double?,
   "markers": [Marker]?,
   "polygons": [Geofence]?,
-  "circles": [Circle]?
+  "circles": [Circle]?,
+  "watermarks": [Watermark]?
 }
 ```
 
@@ -192,7 +193,7 @@ Example:
 https://tileserverurl/tile/klokantech-basic/{z}/{x}/{y}/2/png
 
 ### StaticMap
-https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&markers=[]&polygons=[]&circles=[]
+https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&markers=[]&polygons=[]&circles=[]&watermarks=[]
 
 ### Pregenerate StaticMap
 Pregenerate: `GET https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&pregenerate=true`  
@@ -342,7 +343,7 @@ View: `GET https://tileserverurl/staticmap/pregenerated/{id}`
 }
 ```
 `GET https://tileserverurl/staticmap/pokemon.json?id=201&lat=47.263416&lon=11.400512&form=5`
-![staticmap-template response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/staticmaptemplate.png)
+![staticmap-template response](https://raw.githubusercontent.com/versx/NodeTileserverCache/watermarks/.github/images/staticmaptemplate.png)
 
 ### Complex StaticMap Template (Expected Data Sent)
 ```json

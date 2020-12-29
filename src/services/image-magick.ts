@@ -133,13 +133,12 @@ export class ImageMagick {
             }
             watermarkArgs.push([
                 '-background', 'transparent',
-                '-fill', watermark.fill_color,
+                '-fill', watermark.fill_color || 'grey',
                 '-font', watermark.font || 'Arial',
-                //'-size', '120x80',
                 '-pointsize', (watermark.size || 14).toString(),
                 '-gravity', watermark.location || 'southeast',
                 '-annotate', '+0+0',
-                `${watermark.text}`,
+                watermark.text,
             ]);
         }
         polygonArgs.forEach(x => args = args.concat(x));
