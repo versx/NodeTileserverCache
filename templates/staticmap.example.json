@@ -30,5 +30,12 @@
         "fill_color": "rgba(100.0%, 100.0%, 100.0%, 0.5)",
         "stroke_color": "rgb(45, 45, 45)",
         "stroke_width": 1
+    }],
+    "watermarks": [{
+        "text": "Testing watermark",
+        "fill_color": "grey",
+        "size": 14,
+        "location": "southeast",
+        "font": "Arial"
     }]
 }

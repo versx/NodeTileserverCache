@@ -92,7 +92,7 @@ Example:
 }
 ```
 
-### MultiStaticMap (WIP)
+### MultiStaticMap
 MultiStaticMap route accepts a MultiStaticMap JSON Object as POST Body:
 Example:
 ```json
@@ -161,6 +161,19 @@ Example:
 
 ### Circle
 Circle JSON used in StaticMap:
+Example:
+```json
+{
+  "text": string,
+  "fill_color": string, (imagemagick color string)
+  "size": number,
+  "location": string, (imagemagick position keyword)
+  "font": string (available font on system)
+}
+```
+
+### Watermark
+Watermark JSON used in StaticMap:
 Example:
 ```json
 {
@@ -304,15 +317,28 @@ View: `GET https://tileserverurl/staticmap/pregenerated/{id}`
     "width": 500,
     "height": 250,
     "scale": 1,
-    "markers": [
-        {
-            "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
-            "latitude": <%= lat %>,
-            "longitude": <%= lon %>,
-            "width": 50,
-            "height": 50
-        }
-    ]
+    "markers": [{
+        "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "width": 50,
+        "height": 50
+    }],
+    "circles": [{
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "radius": 25,
+        "fill_color": "rgba(100.0%, 100.0%, 100.0%, 0.5)",
+        "stroke_color": "rgb(45, 45, 45)",
+        "stroke_width": 1
+    }],
+    "watermarks": [{
+        "text": "Testing watermark",
+        "fill_color": "grey",
+        "size": 14,
+        "location": "southeast",
+        "font": "Arial"
+    }]
 }
 ```
 `GET https://tileserverurl/staticmap/pokemon.json?id=201&lat=47.263416&lon=11.400512&form=5`

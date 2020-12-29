@@ -6,6 +6,7 @@ import { Circle } from './circle';
 import { HitStats } from './hit-stats';
 import { Marker } from './marker';
 import { Polygon } from './polygon';
+import { Watermark } from './watermark';
 import * as globals from '../data/globals';
 import { ImageMagick } from '../services/image-magick';
 import * as utils from '../services/utils';
@@ -26,6 +27,7 @@ export class StaticMap {
     public markers?: Marker[] = [];
     public polygons?: Polygon[] = [];
     public circles?: Circle[] = [];
+    public watermarks?: Watermark[] = [];
 
     public hash: string;
 
@@ -57,6 +59,11 @@ export class StaticMap {
             this.circles = args?.circles || [];
         } else {
             this.circles = Circle.parse(args?.circles?.toString());
+        }
+        if (typeof args?.watermarks === 'object') {
+            this.watermarks = args?.watermarks || [];
+        } else {
+            this.watermarks = Watermark.parse(args?.watermarks?.toString());
         }
         this.regeneratable = args?.regeneratable !== undefined && args?.regeneratable !== false;
         this.hash = 'SM' + utils.getHashCode(this);
