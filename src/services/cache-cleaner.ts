@@ -40,7 +40,7 @@ export class CacheCleaner {
         const lastModified = await utils.fileLastModifiedTime(path);
         const now = new Date();
         const delta = (now.getTime() - lastModified.getTime()) / 1000;
-        console.debug('Time Delta:', delta);
+        //console.debug('Time Delta:', delta);
         return delta >= this.maxAgeMinutes * 60;
     }
 
@@ -51,7 +51,6 @@ export class CacheCleaner {
                     console.error('Failed to delete', path, 'Error:', err);
                     return;
                 }
-                console.info('File', path, 'deleted...');
             });
         } catch (e) {
             console.error('Failed to delete', path, 'Error:', e);

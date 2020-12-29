@@ -32,7 +32,7 @@
             <% });
         } %>
         {
-            "url": "http://rdmurl/static/img/pokemon/<%= id %><% if (form) { %>-<%= form %><% } %>.png",
+            "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
             "latitude": <%= lat %>,
             "longitude": <%= lon %>,
             "width": 45,

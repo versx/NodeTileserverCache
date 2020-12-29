@@ -55,24 +55,24 @@ const createDirectory = async (path: string): Promise<void> => {
 
         // Start cache cleaners
         new CacheCleaner(globals.TileCacheDir,
-            parseInt(process.env.TILE_CACHE_MAX_AGE_MINUTES || '10080'),
-            parseInt(process.env.TILE_CACHE_DELAY_SECONDS || '3600')
+            parseInt(process.env.TILE_CACHE_MAX_AGE_MINUTES || '10080') || 10080,
+            parseInt(process.env.TILE_CACHE_DELAY_SECONDS || '3600') || 3600
         );
         new CacheCleaner(globals.StaticCacheDir,
-            parseInt(process.env.STATIC_CACHE_MAX_AGE_MINUTES || '10080'),
-            parseInt(process.env.STATIC_CACHE_DELAY_SECONDS || '3600')
+            parseInt(process.env.STATIC_CACHE_MAX_AGE_MINUTES || '10080') || 10080,
+            parseInt(process.env.STATIC_CACHE_DELAY_SECONDS || '3600') || 3600
         );
         new CacheCleaner(globals.StaticMultiCacheDir,
-            parseInt(process.env.STATIC_MULTI_CACHE_MAX_AGE_MINUTES || '10080'),
-            parseInt(process.env.STATIC_MULTI_CACHE_DELAY_SECONDS || '3600')
+            parseInt(process.env.STATIC_MULTI_CACHE_MAX_AGE_MINUTES || '10080') || 10080,
+            parseInt(process.env.STATIC_MULTI_CACHE_DELAY_SECONDS || '3600') || 3600
         );
         new CacheCleaner(globals.StaticWithMarkersCacheDir,
-            parseInt(process.env.STATIC_MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
-            parseInt(process.env.STATIC_MARKER_CACHE_DELAY_SECONDS || '3600')
+            parseInt(process.env.STATIC_MARKER_CACHE_MAX_AGE_MINUTES || '10080') || 10080,
+            parseInt(process.env.STATIC_MARKER_CACHE_DELAY_SECONDS || '3600') || 3600
         );
         new CacheCleaner(globals.MarkerCacheDir,
-            parseInt(process.env.MARKER_CACHE_MAX_AGE_MINUTES || '10080'),
-            parseInt(process.env.MARKER_CACHE_DELAY_SECONDS || '3600')
+            parseInt(process.env.MARKER_CACHE_MAX_AGE_MINUTES || '10080') || 10080,
+            parseInt(process.env.MARKER_CACHE_DELAY_SECONDS || '3600') || 3600
         );
     } else {
         // Start listener

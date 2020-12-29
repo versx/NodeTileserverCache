@@ -98,7 +98,7 @@ export class RouteController {
         const fileName = path.resolve(globals.TileCacheDir, `${style}-${z}-${x}-${y}-${scale}.${format}`);
         if (!scale || scale <= 0 || !globals.ValidFormats.includes(format)) {
             // Failed
-            return sendErrorResponse(res, 'Error'); // Bad request
+            return sendErrorResponse(res, 'No scale value or invalid format provided'); // Bad request
         }
         if (await utils.fileExists(fileName)) {
             await utils.touch(fileName);

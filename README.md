@@ -318,6 +318,26 @@ View: `GET https://tileserverurl/staticmap/pregenerated/{id}`
 `GET https://tileserverurl/staticmap/pokemon.json?id=201&lat=47.263416&lon=11.400512&form=5`
 ![staticmap-template response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/staticmaptemplate.png)
 
+### Complex StaticMap Template (Expected Data Sent)
+```json
+{
+   "lat": 1.0,
+   "lon": 1.0,
+   "id": 3,
+   "form": 0,
+   "gyms": [
+     { "lat": 1.0, "lon": 1.0, "team": 1 },
+     { "lat": 2.0, "lon": 2.0, "team": 3 },
+     ...
+   ],
+   "stops": [
+     { "lat": 1.1, "lon": 1.1 },
+     { "lat": 2.1, "lon": 2.1 },
+     ...
+   ]
+}
+```
+
 ## TODO
 - Pass through `.env` config to `docker-compose.yml` environment section
 
