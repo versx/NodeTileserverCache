@@ -1,3 +1,4 @@
+![Node.js CI](https://github.com/versx/NodeTileserverCache/workflows/Node.js%20CI/badge.svg)
 ![ts](https://badgen.net/badge/Built%20With/TypeScript/blue)
 [![GitHub Release](https://img.shields.io/github/release/versx/NodeTileserverCache.svg)](https://github.com/versx/NodeTileserverCache/releases/)
 [![GitHub Contributors](https://img.shields.io/github/contributors/versx/NodeTileserverCache.svg)](https://github.com/versx/NodeTileserverCache/graphs/contributors/)
