@@ -25,7 +25,7 @@ export class CacheCleaner {
                 return;
             }
             if (files && files.length > 0) {
-                for (const file in files) {
+                for (const file of files) {
                     const filePath = path.resolve(this.folder, file);
                     if (await this.isFileTooOld(filePath)) {
                         console.info(`Removing file ${filePath} (Too old)`);
