@@ -14,7 +14,7 @@ export class Watermark {
 
     public hash: string;
 
-    constructor(text: string, fillColor: string, strokeColor: string, strokeWidth: number = 1, size: number = 14, location: string = 'southeast', font: string = 'Arial') {
+    constructor(text: string, fillColor: string, strokeColor: string, strokeWidth = 1, size = 14, location = 'southeast', font = 'Arial') {
         this.text = text;
         this.fill_color = fillColor;
         this.stroke_color = strokeColor;

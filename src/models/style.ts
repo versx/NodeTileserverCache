@@ -6,7 +6,7 @@ export class Style {
     public url: string;
     public version: number;
 
-    constructor(id: string, name: string, url: string, version: number = 1) {
+    constructor(id: string, name: string, url: string, version = 1) {
         this.id = id;
         this.name = name;
         this.url = url;
