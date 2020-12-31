@@ -33,9 +33,11 @@
     }],
     "watermarks": [{
         "text": "Testing watermark",
-        "fill_color": "grey",
-        "size": 14,
-        "location": "southeast",
+        "fill_color": "rgba(220,220,220, 0.001)",
+        "stroke_color": "rgba(200,200,200, 0.5)",
+        "stroke_width": 1,
+        "size": 24,
+        "location": "center",
         "font": "Arial"
     }]
 }

@@ -134,6 +134,8 @@ export class ImageMagick {
             watermarkArgs.push([
                 '-background', 'transparent',
                 '-fill', watermark.fill_color || 'grey',
+                '-stroke', watermark.stroke_color || 'black',
+                '-strokewidth', String(watermark.stroke_width),
                 '-font', watermark.font || 'Arial',
                 '-pointsize', (watermark.size || 14).toString(),
                 '-gravity', watermark.location || 'southeast',

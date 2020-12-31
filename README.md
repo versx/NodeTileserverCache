@@ -335,9 +335,11 @@ View: `GET https://tileserverurl/staticmap/pregenerated/{id}`
     }],
     "watermarks": [{
         "text": "Testing watermark",
-        "fill_color": "grey",
+        "fill_color": "rgba(250, 250, 250, 0.3)",
+        "stroke_color": "white",
+        "stroke_width": 1,
         "size": 14,
-        "location": "southeast",
+        "location": "center",
         "font": "Arial"
     }]
 }
