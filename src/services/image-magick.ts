@@ -139,7 +139,7 @@ export class ImageMagick {
                 '-font', watermark.font || 'Arial',
                 '-pointsize', (watermark.size || 14).toString(),
                 '-gravity', watermark.location || 'southeast',
-                '-annotate', '+0+0',
+                '-annotate', '+0+0', //45x45+0+0
                 watermark.text,
             ]);
         }

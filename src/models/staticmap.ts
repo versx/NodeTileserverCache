@@ -102,6 +102,7 @@ export class StaticMap {
         } else {
             const args = await imageMagick.buildArguments(this, fileName, fileNameWithMarker);
             await imageMagick.generate(args);
+            HitStats.staticMarkerHit(this.style, true);
         }
         // Serve static file
         return fileNameWithMarker;
