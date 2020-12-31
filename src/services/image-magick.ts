@@ -126,9 +126,27 @@ export class ImageMagick {
                 '-draw', `circle ${x},${y} ${x - circle.radius},${y + circle.radius}`,
             ]);
         }
+        const watermarkArgs: string[][] = [];
+        for (const watermark of staticmap.watermarks || []) {
+            if (!watermark.text) {
+                continue;
+            }
+            watermarkArgs.push([
+                '-background', 'transparent',
+                '-fill', watermark.fill_color || 'grey',
+                '-stroke', watermark.stroke_color || 'black',
+                '-strokewidth', String(watermark.stroke_width),
+                '-font', watermark.font || 'Arial',
+                '-pointsize', (watermark.size || 14).toString(),
+                '-gravity', watermark.location || 'southeast',
+                '-annotate', '+0+0', //45x45+0+0
+                watermark.text,
+            ]);
+        }
         polygonArgs.forEach(x => args = args.concat(x));
         circleArgs.forEach(x => args = args.concat(x));
         markerArgs.forEach(x => args = args.concat(x));
+        watermarkArgs.forEach(x => args = args.concat(x));
         args.push(destinationPath);
         return args;
     }

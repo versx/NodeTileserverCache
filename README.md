@@ -89,11 +89,12 @@ Example:
   "pitch": double?,
   "markers": [Marker]?,
   "polygons": [Geofence]?,
-  "circles": [Circle]?
+  "circles": [Circle]?,
+  "watermarks": [Watermark]?
 }
 ```
 
-### MultiStaticMap (WIP)
+### MultiStaticMap
 MultiStaticMap route accepts a MultiStaticMap JSON Object as POST Body:
 Example:
 ```json
@@ -174,13 +175,26 @@ Example:
 }
 ```
 
+### Watermark
+Watermark JSON used in StaticMap:
+Example:
+```json
+{
+  "text": string,
+  "fill_color": string, (imagemagick color string)
+  "size": number,
+  "location": string, (imagemagick position keyword)
+  "font": string (available font on system)
+}
+```
+
 ## Examples
 
 ### Tiles
 https://tileserverurl/tile/klokantech-basic/{z}/{x}/{y}/2/png
 
 ### StaticMap
-https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&markers=[]&polygons=[]&circles=[]
+https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&markers=[]&polygons=[]&circles=[]&watermarks=[]
 
 ### Pregenerate StaticMap
 Pregenerate: `GET https://tileserverurl/staticmap?style=klokantech-basic&latitude=47.263416&longitude=11.400512&zoom=17&width=500&height=500&scale=2&pregenerate=true`  
@@ -305,19 +319,34 @@ View: `GET https://tileserverurl/staticmap/pregenerated/{id}`
     "width": 500,
     "height": 250,
     "scale": 1,
-    "markers": [
-        {
-            "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
-            "latitude": <%= lat %>,
-            "longitude": <%= lon %>,
-            "width": 50,
-            "height": 50
-        }
-    ]
+    "markers": [{
+        "url": "https://raw.githubusercontent.com/Mygod/pokicons/master/v2/<%= id %><% if (form) { %>-f<%= form %><% } %>.png",
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "width": 50,
+        "height": 50
+    }],
+    "circles": [{
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "radius": 25,
+        "fill_color": "rgba(100.0%, 100.0%, 100.0%, 0.5)",
+        "stroke_color": "rgb(45, 45, 45)",
+        "stroke_width": 1
+    }],
+    "watermarks": [{
+        "text": "Testing watermark",
+        "fill_color": "rgba(250, 250, 250, 0.3)",
+        "stroke_color": "white",
+        "stroke_width": 1,
+        "size": 14,
+        "location": "center",
+        "font": "Arial"
+    }]
 }
 ```
 `GET https://tileserverurl/staticmap/pokemon.json?id=201&lat=47.263416&lon=11.400512&form=5`
-![staticmap-template response](https://raw.githubusercontent.com/123FLO321/SwiftTileserverCache/master/.exampleimages/staticmaptemplate.png)
+![staticmap-template response](https://raw.githubusercontent.com/versx/NodeTileserverCache/watermarks/.github/images/staticmaptemplate.png)
 
 ### Complex StaticMap Template (Expected Data Sent)
 ```json

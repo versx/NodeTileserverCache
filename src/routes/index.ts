@@ -84,8 +84,6 @@ export class RouteController {
         const url = `${process.env.TILE_SERVER_URL}/styles.json`;
         const data = await utils.getData(url);
         const styles = Object.assign(new Array<Style>(), data);
-        // TODO: Use styles model/interface instead of Record<string, unknown>
-        //const list = obj.map((x: Record<string, unknown>) => x.id);
         res.json(styles);
     }
 
