@@ -182,8 +182,10 @@ Example:
 {
   "text": string,
   "fill_color": string, (imagemagick color string)
-  "size": number,
-  "location": string, (imagemagick position keyword)
+  "stroke_color": string, (imagemagick color string)
+  "stroke_width": int,
+  "size": int,
+  "location": string, (imagemagick gravity keyword)
   "font": string (available font on system)
 }
 ```
