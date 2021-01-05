@@ -28,6 +28,7 @@ services:
         npm start
     volumes:
       - .:/app
+      - /usr/share/fonts/:/usr/share/fonts/
     ports:
       - 43200:43200
     network_mode: host
