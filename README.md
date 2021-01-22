@@ -348,7 +348,7 @@ View: `GET https://tileserverurl/staticmap/pregenerated/{id}`
 }
 ```
 `GET https://tileserverurl/staticmap/pokemon.json?id=201&lat=47.263416&lon=11.400512&form=5`
-![staticmap-template response](https://raw.githubusercontent.com/versx/NodeTileserverCache/watermarks/.github/images/staticmaptemplate.png)
+![staticmap-template response](https://raw.githubusercontent.com/versx/NodeTileserverCache/master/.github/images/staticmaptemplate.png)
 
 ### Complex StaticMap Template (Expected Data Sent)
 ```json
