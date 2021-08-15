@@ -185,7 +185,7 @@ Example:
   "stroke_color": string, (imagemagick color string)
   "stroke_width": int,
   "size": int,
-  "location": string, (imagemagick gravity keyword)
+  "location": string, (imagemagick gravity keyword: NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast)
   "font": string (available font on system)
 }
 ```
