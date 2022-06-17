@@ -170,7 +170,6 @@ export class RouteController {
         const templateData = await template.render(req.body);
         const tplObj = JSON.parse(templateData);
         const staticMap = new StaticMap(tplObj);
-        //console.debug('Template StaticMap:', staticMap);
 
         let fileName: string;
         try {
@@ -180,7 +179,13 @@ export class RouteController {
             return sendErrorResponse(res, e);
         }
         console.info(`Serving Static: ${fileName}`);
-        sendResponse(res, fileName, !staticMap.regeneratable, staticMap.regeneratable);
+        const regen = req.query.regeneratable === 'true';
+        if (regen) {
+            const id = await utils.storeRegenerable(staticMap);
+            sendResponse(res, id, !regen, regen);
+        } else {
+            sendResponse(res, fileName, !regen, regen);
+        }
     }
 
     /**
@@ -312,15 +317,16 @@ export class RouteController {
     }
 }
 
-const sendResponse = (res: Response, path: string, setCacheControl = true, regeneratable = false): void => {
+const sendResponse = (res: Response, filePath: string, setCacheControl = true, regeneratable = false): void => {
     if (setCacheControl && !regeneratable) {
         res.setHeader('Cache-Control', 'max-age=604800, must-revalidate');
     }
     if (regeneratable) {
         res.setHeader('content-type', 'text/html');
-        res.send(path);
+        const fileName = path.basename(filePath);
+        res.send(fileName);
     } else {
-        res.sendFile(path, (err: Error) => {
+        res.sendFile(filePath, (err: Error) => {
             if (err) {
                 console.error('Failed to send static file:', err);
                 return;

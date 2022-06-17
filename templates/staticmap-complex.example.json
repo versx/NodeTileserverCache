@@ -7,12 +7,12 @@
     "height": 250,
     "scale": 1,
     "markers": [
-        <% if (stops != null) {
-            stops.forEach(function(stop) { %>
+        <% if (pokestops != null) {
+            pokestops.forEach(function(pokestop) { %>
             {
-                "url": "<%= stop.marker %>",
-                "latitude": <%= stop.lat %>,
-                "longitude": <%= stop.lon %>,
+                "url": "<%= pokestop.marker %>",
+                "latitude": <%= pokestop.lat %>,
+                "longitude": <%= pokestop.lon %>,
                 "width": 50,
                 "height": 50
             },
@@ -36,5 +36,13 @@
             "width": 50,
             "height": 50
         }
-    ]
+    ],
+    "circles": [{
+        "latitude": <%= lat %>,
+        "longitude": <%= lon %>,
+        "radius": 25,
+        "fill_color": "rgba(100.0%, 100.0%, 100.0%, 0.5)",
+        "stroke_color": "rgb(45, 45, 45)",
+        "stroke_width": 1
+    }]
 }
