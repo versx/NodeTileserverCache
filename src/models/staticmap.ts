@@ -88,6 +88,7 @@ export class StaticMap {
         }
 
         // If regeneratable staticmap, store for later use
+        // TODO: Verify `this.regeneratable` is being set
         if (this.regeneratable) {
             const id = await utils.storeRegenerable<StaticMap>(this);
             return id;

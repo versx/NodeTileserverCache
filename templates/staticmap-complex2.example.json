@@ -7,12 +7,12 @@
     "height": 250,
     "scale": 1,
     "markers": [
-        <% if (stops != null) {
-            stops.forEach(function(stop) { %>
+        <% if (pokestops != null) {
+            pokestops.forEach(function(pokestop) { %>
             {
                 "url": "https://raw.githubusercontent.com/whitewillem/PMSF/develop/static/forts/Pstop.png",
-                "latitude": <%= stop.lat %>,
-                "longitude": <%= stop.lon %>,
+                "latitude": <%= pokestop.lat %>,
+                "longitude": <%= pokestop.lon %>,
                 "width": 20,
                 "height": 20,
                 "y_offset": -8
@@ -22,7 +22,7 @@
         <% if (gyms != null) {
             gyms.forEach(function(gym) { %>
             {
-                "url": "https://raw.githubusercontent.com/whitewillem/PMSF/develop/static/forts/shield/<%= gym.team %>",
+                "url": "https://raw.githubusercontent.com/whitewillem/PMSF/develop/static/forts/shield/<%= gym.team %>.png",
                 "latitude": <%= gym.lat %>,
                 "longitude": <%= gym.lon %>,
                 "width": 20,

@@ -64,7 +64,7 @@ export const touch = async (fileName: string): Promise<void> => {
 };
 
 export const storeRegenerable = async <T>(staticmap: T): Promise<string> => {
-    const id = getHashCode(staticmap);
+    const id = getHashCode(staticmap) + '.png';
     const fileName = path.resolve(globals.RegeneratableCacheDir, id) + '.json';
     const fileData = JSON.stringify(staticmap);
     fs.writeFileSync(fileName, fileData);
