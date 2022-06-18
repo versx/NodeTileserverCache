@@ -167,7 +167,8 @@ export class RouteController {
     async postStaticMapTemplate(req: Request, res: Response): Promise<void> {
         const name = req.params.template;
         const template = new Template(name);
-        const templateData = await template.render(req.body);
+        const templateDatas = Object.assign(req.body, req.query, req.params);
+        const templateData = await template.render(templateDatas);
         const tplObj = JSON.parse(templateData);
         const staticMap = new StaticMap(tplObj);
 
